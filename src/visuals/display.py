@@ -1,3 +1,5 @@
+import pygame
+import config
 
 
 class Display:
@@ -7,7 +9,20 @@ class Display:
     Different screens/menus/scenes should be implemented elsewhere, and this class should be used for displaying them.
     '''
     def __init__(self):
-        pass
+        import scenes
+        self.screen = pygame.display.set_mode(config.screen_dimensions)
+        self.main_menu      = scenes.MainMenu(self)
+        self.game_screen    = scenes.GameScreen(self)
 
-    def update(self):
-        pass
+        self.set_scene(self.main_menu)
+
+    def open_game(self):
+        self.set_scene(self.game_screen)
+
+    def set_scene(self, scene: object):
+        self.active_scene = scene
+    
+    def process(self):
+        self.active_scene.objects.update()
+        self.active_scene.objects.draw(self.screen)
+        pygame.display.flip()
