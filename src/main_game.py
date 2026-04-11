@@ -1,5 +1,5 @@
 import pygame
-from .input_handler import InputHandler
+from .game_logic.input_handler import InputHandler
 
 
 class MainGame:
@@ -16,7 +16,7 @@ class MainGame:
         self.running = True
 
     def run(self):
-        while self.running:
+        while self.input_handler.running:
             self.input_handler.handle_events()
 
             self.clock.tick(self.FPS)
