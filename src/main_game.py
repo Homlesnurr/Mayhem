@@ -22,5 +22,8 @@ class MainGame:
             self.input_handler.handle_events()
             self.clock.tick(self.FPS)
             
-            self.screen.fill((67, 67, 67))
+
+            self.background = pygame.transform.scale(pygame.image.load("assets/temp_background.jpeg"), (800, 600))
+            self.screen.blit(self.background, (0, 0))
+            #self.screen.fill((67, 67, 67))
             pygame.display.flip()

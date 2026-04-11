@@ -1,10 +1,13 @@
 import pygame
 #temp const
 dt = 0.01
+starting_fuel = 100
 
 class Core_physics(pygame.sprite.Sprite):
 
-    
+    """
+    Base class for physics based objects: Velocity, acceleration and position updates. All objects that move inherits this.
+    """
 
     def __init__(self, x, y):
         super().__init__()
@@ -29,6 +32,9 @@ class Core_physics(pygame.sprite.Sprite):
     def gravity(self):
         self.acceleration[1] += 9.81 * dt
 
+    def update(self, dt):
+        pass
+
 class physics_engine:
     def __init__(self):
         self.spaceships = []
@@ -37,16 +43,28 @@ class physics_engine:
         for spaceship in self.spaceships:
             spaceship.update()
 
-class spaceship:
-    def __init__(self):
+class spaceship(Core_physics):
+    def __init__(self, x, y, player_tag):
+        super().__init__(x, y)
+        self.player_tag = player_tag
+        self.fuel = starting_fuel
+
+        self.thrusting = False
+        self.rotate_left = False
+        self.rotate_right = False
+
+    #add image/hitbox med rect? abel fikse trust    
+
+
+    def update(self, dt):
+        
+
+
         pass
 
-    def update(self):
-        pass
-
-class bullet:
-    def __init__(self):
-        pass
+class bullet(Core_physics):
+    def __init__(self, x, y):
+        super().__init__(x, y)
 
     def update(self):
         pass
