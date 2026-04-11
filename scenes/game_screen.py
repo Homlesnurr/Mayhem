@@ -9,7 +9,7 @@ class GameScreen(SceneBase):
     '''
     def __init__(self, display: Display):
         super().__init__()
-        background = ImageLoader('assets\\faker.jpg')
+        background = ImageLoader('assets\\temp_background.jpeg')
         self.add(background)
 
 
