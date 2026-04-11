@@ -2,6 +2,7 @@ import pygame
 #temp const
 dt = 0.01
 starting_fuel = 100
+rotation_speed = 15
 
 class Core_physics(pygame.sprite.Sprite):
 
@@ -58,10 +59,20 @@ class spaceship(Core_physics):
 
     def update(self, dt):
         
+        #apply gravity
+        self.gravity(dt)
+        
+        #rotation
+        if self.rotate_left:
+            self.angle = (self.angle - rotation_speed * dt) % 360
+        if self.rotate_right:
+            self.angle = (self.angle + rotation_speed * dt) % 360
+        
+        #thrust
+        if self.thrusting and self.fuel > 0:
+            pass
 
-
-        pass
-
+    
 class bullet(Core_physics):
     def __init__(self, x, y):
         super().__init__(x, y)
