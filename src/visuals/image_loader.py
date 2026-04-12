@@ -1,7 +1,8 @@
 import pygame
+from src.visuals import SpriteBase
 import config
 
-class ImageLoader(pygame.sprite.Sprite):
+class ImageLoader(SpriteBase):
     def __init__(self,
                  image_path: str = None,
                  size: tuple[int, int] = None,

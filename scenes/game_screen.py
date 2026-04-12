@@ -27,7 +27,7 @@ class GameScreen(SceneBase):
         self.add_spaceship(self.player2)
 
     def add_spaceship(self, spaceship: Spaceship):
-        self.spaceships.add(spaceship.sprite.image)
+        self.spaceships.add(spaceship.sprite)
         self.physics_engine.add_spaceship(spaceship)
 
 
