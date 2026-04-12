@@ -8,6 +8,8 @@ dt = 1/config.FPS
 starting_fuel = 100
 rotation_speed = 2
 consume_fuel_rate = 10
+bullet_speed = 150
+
 
 class PhysicsEngine:
     def __init__(self):
@@ -20,6 +22,7 @@ class PhysicsEngine:
         self.spaceships.remove(ship)
     
     def update(self):
+        # må legge til group update for alle objects senere
         for spaceship in self.spaceships:
             spaceship.update()
 
@@ -94,6 +97,13 @@ class Spaceship(CorePhysics):
         elif dir == 'r' or dir == 'right':
             self.rotate_right = True
 
+    def fire_bullet(self):
+
+        bullet_vel_x = -bullet_speed * np.sin(np.deg2rad(self.angle))
+        bullet_vel_y = -bullet_speed * np.cos(np.deg2rad(self.angle))
+        bullet = Bullet(self.position[0], self.position[1])
+        bullet.velocity = [bullet_vel_x, bullet_vel_y]
+        return bullet
     def update(self):
         # update Spaceship
         self.apply_physics()
@@ -124,7 +134,24 @@ class Spaceship(CorePhysics):
     
 class Bullet(CorePhysics):
     def __init__(self, x, y):
-        super().__init__(x, y)
+        super().__init__(x, y) #position from spaceship, velocity from spaceship angle and bullet speed cons
+
+        self.velocity = [x, y]
+        
+
+        #rectangle laser bullet
+        self.image = pygame.Surface((10, 2))
+        self.image.fill((255, 0, 0))
+        self.rect = self.image.get_rect(center=(x, y))
 
     def update(self):
-        pass
+
+        self.position[0] += self.velocity[0] * dt
+        self.position[1] += self.velocity[1] * dt
+        self.rect.center = self.position
+
+        #add lifetime for bullet later
+
+
+
+        #abel fikse at vises på skjermen
