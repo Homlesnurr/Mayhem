@@ -7,6 +7,7 @@ from src.visuals import SpaceshipSprite, Map
 dt = 1/config.FPS
 starting_fuel = 100
 rotation_speed = 2
+consume_fuel_rate = 10
 
 class PhysicsEngine:
     def __init__(self):
@@ -100,6 +101,14 @@ class Spaceship(CorePhysics):
         self.thrusting = False
         self.rotate_left = False
         self.rotate_right = False
+
+       # fuel consumption
+        self.fuel -= consume_fuel_rate * dt
+        if self.fuel < 0:
+            self.fuel = 0
+            self.thrusting = False
+
+
     
     def __repr__(self):
         return (
