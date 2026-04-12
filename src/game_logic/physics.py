@@ -1,10 +1,12 @@
+from __future__ import annotations
 import pygame
+from src.visuals import SpaceshipSprite
 #temp const
 dt = 0.01
 starting_fuel = 100
 rotation_speed = 15
 
-class Core_physics(pygame.sprite.Sprite):
+class CorePhysics(pygame.sprite.Sprite):
 
     """
     Base class for physics based objects: Velocity, acceleration and position updates. All objects that move inherits this.
@@ -33,19 +35,25 @@ class Core_physics(pygame.sprite.Sprite):
     def gravity(self):
         self.acceleration[1] += 9.81 * dt
 
-    def update(self, dt):
+    def update(self):
         pass
 
-class physics_engine:
+class PhysicsEngine:
     def __init__(self):
         self.spaceships = []
 
+    def add_spaceship(self, ship: Spaceship):
+        self.spaceships.append(ship)
+    
+    def remove_spaceship(self, ship: Spaceship):
+        self.spaceships.remove(ship)
+    
     def update(self):
         for spaceship in self.spaceships:
             spaceship.update()
 
-class spaceship(Core_physics):
-    def __init__(self, x, y, player_tag):
+class Spaceship(CorePhysics):
+    def __init__(self, x: int, y: int, player_tag: str):
         super().__init__(x, y)
         self.player_tag = player_tag
         self.fuel = starting_fuel
@@ -54,13 +62,13 @@ class spaceship(Core_physics):
         self.rotate_left = False
         self.rotate_right = False
 
-    #add image/hitbox med rect? abel fikse trust    
+        self.sprite = SpaceshipSprite((x,y))
 
 
-    def update(self, dt):
+    def update(self):
         
         #apply gravity
-        self.gravity(dt)
+        self.gravity()
         
         #rotation
         if self.rotate_left:
@@ -73,7 +81,7 @@ class spaceship(Core_physics):
             pass
 
     
-class bullet(Core_physics):
+class Bullet(CorePhysics):
     def __init__(self, x, y):
         super().__init__(x, y)
 

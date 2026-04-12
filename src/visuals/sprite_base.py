@@ -1,15 +1,10 @@
 import pygame
 from abc import ABC, abstractmethod
 
-class SpriteBase(pygame.sprite.Sprite(), ABC):
-    @abstractmethod
-    def update(self):
-        pass
-    
-    @abstractmethod
-    def set_image(self):
-        pass
+class SpriteBase(pygame.sprite.Sprite, ABC):
+    def __init__(self):
+        super().__init__()
 
     @abstractmethod
-    def set_rect(self):
+    def update(self):
         pass

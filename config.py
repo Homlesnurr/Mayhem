@@ -1,3 +1,3 @@
-screen_dimensions = (1600//1.5, 920//1.5)
+screen_dimensions = (1600, 920)
 fullscreen = False
 FPS = 60
