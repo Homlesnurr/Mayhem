@@ -1,8 +1,9 @@
 from __future__ import annotations
 import pygame
-from src.visuals import SpaceshipSprite
+import config
+from src.visuals import SpaceshipSprite, Map
 #temp const
-dt = 0.01
+dt = 1/config.FPS
 starting_fuel = 100
 rotation_speed = 15
 
@@ -20,20 +21,23 @@ class CorePhysics(pygame.sprite.Sprite):
         self.angle = 0.0
 
     def apply_physics(self):
+        # Update gravity 
+        self.gravity()
+
         # update velocity
-        self.velocity[0] += self.acceleration[0] * dt
-        self.velocity[1] += self.acceleration[1] * dt
+        self.velocity[0] += self.acceleration[0]
+        self.velocity[1] += self.acceleration[1]
 
         #max velocity
-        self.velocity[0] = max(-5, min(5, self.velocity[0]))
-        self.velocity[1] = max(-5, min(5, self.velocity[1]))
+        self.velocity[0] = max(-500, min(500, self.velocity[0]))
+        self.velocity[1] = max(-500, min(500, self.velocity[1]))
 
         # update position
         self.position[0] += self.velocity[0] * dt
         self.position[1] += self.velocity[1] * dt
 
     def gravity(self):
-        self.acceleration[1] += 9.81 * dt
+        self.acceleration[1] = 4
 
     def update(self):
         pass
@@ -66,20 +70,31 @@ class Spaceship(CorePhysics):
 
 
     def update(self):
-        
-        #apply gravity
-        self.gravity()
-        
-        #rotation
+        self.apply_physics()
+        # rotation
         if self.rotate_left:
             self.angle = (self.angle - rotation_speed * dt) % 360
         if self.rotate_right:
             self.angle = (self.angle + rotation_speed * dt) % 360
         
-        #thrust
+        # thrust
         if self.thrusting and self.fuel > 0:
             pass
 
+        # update sprite
+        self.sprite.update(self.position)
+    
+    def __repr__(self):
+        return (
+            f'Spaceship:\t{self.player_tag}\n'
+            f'Fuel:\t\t{self.fuel}\n'
+            f'Position:\t{self.position}\n'
+            f'Velocity:\t{self.velocity}\n'
+            f'Acceleration:\t{self.acceleration}\n'
+            f'Angle:\t\t{self.angle}\n'
+            f'Thrusting:\t{self.thrusting}\n'
+            f'Rotate L/R:\t{int(self.rotate_left)}/{int(self.rotate_right)}'
+        )
     
 class Bullet(CorePhysics):
     def __init__(self, x, y):

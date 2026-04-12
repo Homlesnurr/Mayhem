@@ -1,9 +1,9 @@
 import pygame
 import config
 from typing import Callable
+from src.visuals import SpriteBase
 
-
-class RoundedButton(pygame.sprite.Sprite):
+class RoundedButton(SpriteBase):
     '''
     Class for making rounded buttons.
     '''
@@ -12,8 +12,8 @@ class RoundedButton(pygame.sprite.Sprite):
                  y: int,
                  width: int,
                  height: int,
-                 color: tuple[int,int,int],
-                 text: str,
+                 color: tuple[int,int,int] = (255,255,255),
+                 text: str = None,
                  click_func: Callable | None = None,
                  hover_func: Callable | None = None) -> None:
         super().__init__()

@@ -1,7 +1,7 @@
 import pygame
 import config
 from scenes import SceneBase
-from src.visuals import RoundedButton, ImageLoader, Display, SpaceshipSprite
+from src.visuals import RoundedButton, ImageLoader, Display, SpaceshipSprite, Map
 from src.game_logic import Spaceship, PhysicsEngine
 
 class GameScreen(SceneBase):
@@ -10,17 +10,19 @@ class GameScreen(SceneBase):
     '''
     def __init__(self, display: Display):
         super().__init__()
-        background = ImageLoader('assets\\temp_background.jpeg', config.screen_dimensions)
         self.physics_engine = PhysicsEngine()
         self.spaceships = pygame.sprite.Group()
+        self.map = Map()
         self.player1 = Spaceship(x = 100,
-                                 y = config.screen_dimensions[1] - 100,
+                                #  y = config.screen_dimensions[1] - 100,
+                                 y=100,
                                  player_tag = 'Player 1')
         
         self.player2 = Spaceship(x = config.screen_dimensions[0] - 100,
-                                 y = config.screen_dimensions[1] - 100,
+                                #  y = config.screen_dimensions[1] - 100,
+                                 y=100,
                                  player_tag = 'Player 2')
-        self.add(background)
+        self.add(self.map)
         self.add_spaceship(self.player1)
         self.add_spaceship(self.player2)
 
