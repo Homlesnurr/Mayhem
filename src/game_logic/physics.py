@@ -8,12 +8,13 @@ dt = 1/config.FPS
 starting_fuel = 100
 rotation_speed = 2
 consume_fuel_rate = 10
-bullet_speed = 150
+bullet_speed = 350
 
 
 class PhysicsEngine:
     def __init__(self):
         self.spaceships = []
+        self.bullets = pygame.sprite.Group()
 
     def add_spaceship(self, ship: Spaceship):
         self.spaceships.append(ship)
@@ -23,6 +24,7 @@ class PhysicsEngine:
     
     def update(self):
         # må legge til group update for alle objects senere
+        self.bullets.update()
         for spaceship in self.spaceships:
             spaceship.update()
 
@@ -50,6 +52,7 @@ class Spaceship(CorePhysics):
         super().__init__(x, y)
         self.player_tag = player_tag
         self.fuel = starting_fuel
+        self.shoot_cd = 0
         self.thrusting = False
         self.rotate_left = False
         self.rotate_right = False
@@ -65,13 +68,16 @@ class Spaceship(CorePhysics):
             self.rotate_right = True
 
     def fire_bullet(self):
+        if self.shoot_cd > 0:
+            return
+        self.shoot_cd = 0.3
         bullet_vel_x = -bullet_speed * np.sin(np.deg2rad(self.angle))
         bullet_vel_y = -bullet_speed * np.cos(np.deg2rad(self.angle))
-        bullet = Bullet(self.position[0],
+        bullet_velocity = [bullet_vel_x, bullet_vel_y]
+        self.bullet = Bullet(self.position[0],
                         self.position[1],
+                        bullet_velocity,
                         self.angle)
-        bullet.velocity = [bullet_vel_x, bullet_vel_y]
-        return bullet
     
     def apply_physics(self):
         self.reset_accel()
@@ -113,6 +119,7 @@ class Spaceship(CorePhysics):
         # update Spaceship
         self.apply_physics()
         self.sprite.update(self.position, self.angle)
+        self.shoot_cd -= dt
         self.thrusting = False
         self.rotate_left = False
         self.rotate_right = False
@@ -130,19 +137,22 @@ class Spaceship(CorePhysics):
         )
     
 class Bullet(CorePhysics):
-    def __init__(self, x, y, angle):
+    def __init__(self, x, y, v, angle):
         super().__init__(x, y) #position from spaceship, velocity from spaceship angle and bullet speed cons
-        self.velocity = (x, y)
+        self.position = np.array([x, y])
+        self.velocity = np.array(v)
         self.angle = angle
 
         #rectangle laser bullet
         self.sprite = BulletSprite(self.velocity, self.angle)
+        self.image = self.sprite.image
+        self.rect = self.sprite.rect
 
     def update(self):
-
-        self.position[0] += self.velocity[0] * dt
-        self.position[1] += self.velocity[1] * dt
-        self.rect.center = self.position
+        self.position = self.position + self.velocity * dt
+        self.sprite.update(self.position, self.angle)
+        self.image = self.sprite.image
+        self.rect = self.sprite.rect
 
         #add lifetime for bullet later
 

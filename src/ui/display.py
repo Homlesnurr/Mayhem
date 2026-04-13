@@ -45,6 +45,7 @@ class Display:
             self.active_scene.physics_engine.update()
             self.active_scene.objects.draw(self.screen)
             self.active_scene.spaceships.draw(self.screen)
+            self.active_scene.physics_engine.bullets.draw(self.screen)
         else:
             self.active_scene.objects.update()
             self.active_scene.objects.draw(self.screen)

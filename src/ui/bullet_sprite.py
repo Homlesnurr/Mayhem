@@ -1,12 +1,13 @@
 import pygame
+from numpy.typing import NDArray
 import config
 from src.ui import SpriteBase, ImageLoader
 
 
 class BulletSprite(SpriteBase):
-    def __init__(self, pos: tuple[int, int], angle: float):
+    def __init__(self, pos: list[int, int], angle: float):
         super().__init__()
-        self.bullet_surf = pygame.Surface((10, 2), pygame.SRCALPHA)
+        self.bullet_surf = pygame.Surface((6, 20), pygame.SRCALPHA)
         self.pos = pos
         self.image_base = self.bullet_surf
         self.image = self.image_base.copy()
@@ -23,9 +24,7 @@ class BulletSprite(SpriteBase):
         self.rect.center = (pos)
 
     def update(self,
-               pos: list[int, int] | tuple[int, int] = None,
-               angle: int | float = None):
-        if angle:
-            self.rotate_sprite(angle)
-        if pos:
-            self.set_pos(pos)
+               pos: list[int, int] = [config.screen_dimensions[0] // 2, config.screen_dimensions[1] // 2],
+               angle: int | float = 0):
+        self.rotate_sprite(angle)
+        self.set_pos(pos)

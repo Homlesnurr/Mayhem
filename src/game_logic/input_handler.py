@@ -33,6 +33,7 @@ class InputHandler:
                 for ship in ships:
                     if ship.player_tag == 'Player 1':
                         ship.fire_bullet()
+                        self.display.active_scene.physics_engine.bullets.add(ship.bullet)
 
             if pressed_keys[pygame.K_d]:
                 for ship in ships:
@@ -53,6 +54,7 @@ class InputHandler:
                 for ship in ships:
                     if ship.player_tag == 'Player 2':
                         ship.fire_bullet()
+                        self.display.active_scene.physics_engine.bullets.add(ship.bullet)
 
             if pressed_keys[pygame.K_RIGHT]:
                 for ship in ships:

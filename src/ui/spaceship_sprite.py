@@ -4,7 +4,7 @@ from src.ui import SpriteBase, ImageLoader
 
 
 class SpaceshipSprite(SpriteBase):
-    def __init__(self, pos: tuple[int, int]):
+    def __init__(self, pos: list[int, int]):
         super().__init__()
         self.ship_sprite = ImageLoader('assets\\rocket_ship_blue.png', scale=0.7)
         self.pos = pos
@@ -22,9 +22,7 @@ class SpaceshipSprite(SpriteBase):
         self.rect.center = (pos)
 
     def update(self,
-               pos: list[int, int] | tuple[int, int] = None,
-               angle: int | float = None):
-        if angle:
-            self.rotate_sprite(angle)
-        if pos:
-            self.set_pos(pos)
+               pos: list[int, int] = [config.screen_dimensions[0] // 2, config.screen_dimensions[1] // 2],
+               angle: int | float = 0):
+        angle = self.rotate_sprite(angle)
+        pos = self.set_pos(pos)
