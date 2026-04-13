@@ -12,62 +12,49 @@ class InputHandler:
         self.display = display
         self.running = True
 
+    def player_input(self, event: int | pygame.key.ScancodeWrapper):
+        if event not in [pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_DOWN]:
+            if not isinstance(event, pygame.key.ScancodeWrapper):
+                return
+        ship1, ship2 = self.display.active_scene.physics_engine.spaceships
+        if isinstance(event, pygame.key.ScancodeWrapper):
+            if event[pygame.K_w]:       ship1.thrust()
+            if event[pygame.K_a]:       ship1.rotate('left')
+            if event[pygame.K_d]:       ship1.rotate('right')
+            if event[pygame.K_s]:       ship1.fire_bullet(); self.display.active_scene.physics_engine.bullets.add(ship1.bullet)
+
+            if event[pygame.K_UP]:      ship2.thrust()
+            if event[pygame.K_LEFT]:    ship2.rotate('left')
+            if event[pygame.K_RIGHT]:   ship2.rotate('right')
+            if event[pygame.K_DOWN]:    ship2.fire_bullet(); self.display.active_scene.physics_engine.bullets.add(ship2.bullet)
+
+
+        if isinstance(event, int):
+            if event == pygame.K_w:     ship1.thrust()
+            if event == pygame.K_a:     ship1.rotate('left')
+            if event == pygame.K_d:     ship1.rotate('right')
+            if event == pygame.K_s:     ship1.fire_bullet(); self.display.active_scene.physics_engine.bullets.add(ship1.bullet)
+
+            if event == pygame.K_UP:    ship2.thrust()
+            if event == pygame.K_LEFT:  ship2.rotate('left')
+            if event == pygame.K_RIGHT: ship2.rotate('right')
+            if event == pygame.K_DOWN:  ship2.fire_bullet(); self.display.active_scene.physics_engine.bullets.add(ship2.bullet)
+
+
+
     def handle_events(self):
         mouse_sprite = pygame.sprite.Sprite()
         mouse_sprite.rect = pygame.Rect(*pygame.mouse.get_pos(), 1,1)
         pressed_keys = pygame.key.get_pressed()
         if isinstance(self.display.active_scene, GameScreen):
-            ships: list[Spaceship] = self.display.active_scene.physics_engine.spaceships
-
-            if pressed_keys[pygame.K_w]:
-                for ship in ships:
-                    if ship.player_tag == 'Player 1':
-                        ship.thrust()
-                
-            if pressed_keys[pygame.K_a]:
-                for ship in ships:
-                    if ship.player_tag == 'Player 1':
-                        ship.rotate('left')
-            
-            if pressed_keys[pygame.K_s]:
-                for ship in ships:
-                    if ship.player_tag == 'Player 1':
-                        ship.fire_bullet()
-                        self.display.active_scene.physics_engine.bullets.add(ship.bullet)
-
-            if pressed_keys[pygame.K_d]:
-                for ship in ships:
-                    if ship.player_tag == 'Player 1':
-                        ship.rotate('right')
-
-            if pressed_keys[pygame.K_UP]:
-                for ship in ships:
-                    if ship.player_tag == 'Player 2':
-                        ship.thrust()
-
-            if pressed_keys[pygame.K_LEFT]:
-                for ship in ships:
-                    if ship.player_tag == 'Player 2':
-                        ship.rotate('left')
-                        
-            if pressed_keys[pygame.K_DOWN]:
-                for ship in ships:
-                    if ship.player_tag == 'Player 2':
-                        ship.fire_bullet()
-                        self.display.active_scene.physics_engine.bullets.add(ship.bullet)
-
-            if pressed_keys[pygame.K_RIGHT]:
-                for ship in ships:
-                    if ship.player_tag == 'Player 2':
-                        ship.rotate('right')
+            self.player_input(pressed_keys)
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-            
-
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                self.display.set_scene(self.display.main_menu)
+            if isinstance(self.display.active_scene, GameScreen): self.player_input(event)
+            if event.type == pygame.QUIT: self.running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE: self.display.set_scene(self.display.main_menu)
+                if isinstance(self.display.active_scene, GameScreen): self.player_input(event.key)
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 hovered_sprites = pygame.sprite.spritecollide(mouse_sprite, self.display.active_scene.objects, False)
