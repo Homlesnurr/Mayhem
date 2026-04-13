@@ -1,6 +1,6 @@
 import pygame
 from .game_logic.input_handler import InputHandler
-from .visuals.display import Display
+from .ui.display import Display
 import scenes
 import config
 

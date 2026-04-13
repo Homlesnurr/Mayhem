@@ -1,5 +1,5 @@
 import pygame
-from src.visuals import Display
+from src.ui import Display
 from src.game_logic import Spaceship
 from scenes import GameScreen
 import config
@@ -28,6 +28,11 @@ class InputHandler:
                 for ship in ships:
                     if ship.player_tag == 'Player 1':
                         ship.rotate('left')
+            
+            if pressed_keys[pygame.K_s]:
+                for ship in ships:
+                    if ship.player_tag == 'Player 1':
+                        ship.fire_bullet()
 
             if pressed_keys[pygame.K_d]:
                 for ship in ships:
@@ -43,6 +48,11 @@ class InputHandler:
                 for ship in ships:
                     if ship.player_tag == 'Player 2':
                         ship.rotate('left')
+                        
+            if pressed_keys[pygame.K_DOWN]:
+                for ship in ships:
+                    if ship.player_tag == 'Player 2':
+                        ship.fire_bullet()
 
             if pressed_keys[pygame.K_RIGHT]:
                 for ship in ships:

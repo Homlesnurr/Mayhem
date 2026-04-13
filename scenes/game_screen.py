@@ -1,7 +1,7 @@
 import pygame
 import config
 from scenes import SceneBase
-from src.visuals import RoundedButton, ImageLoader, Display, SpaceshipSprite, Map
+from src.ui import RoundedButton, ImageLoader, Display, SpaceshipSprite, Map
 from src.game_logic import Spaceship, PhysicsEngine
 
 class GameScreen(SceneBase):

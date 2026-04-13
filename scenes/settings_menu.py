@@ -1,7 +1,7 @@
 import pygame
 import config
 from scenes import SceneBase
-from src.visuals import RoundedButton, ImageLoader, Display
+from src.ui import RoundedButton, ImageLoader, Display
 
 class SettingsMenu(SceneBase):
     '''

@@ -2,7 +2,7 @@ from __future__ import annotations
 import pygame
 import numpy as np
 import config
-from src.visuals import SpaceshipSprite, Map
+from src.ui import SpaceshipSprite, Map, BulletSprite
 #temp const
 dt = 1/config.FPS
 starting_fuel = 100
@@ -37,43 +37,10 @@ class CorePhysics(pygame.sprite.Sprite):
         self.acceleration = [0.0, 0.0] 
         self.angle = 0.0
 
-    def apply_physics(self):
-        self.reset_accel()
-        
-        # rotation
-        if self.rotate_left and self.rotate_right:
-            pass
-        elif self.rotate_left:
-            self.angle = (self.angle + rotation_speed)
-        elif self.rotate_right:
-            self.angle = (self.angle - rotation_speed)
-        
-        # thrust
-        if self.thrusting and self.fuel > 0:
-            self.acceleration[0] += -20 * np.sin(np.deg2rad(self.angle))
-            self.acceleration[1] += -20 * np.cos(np.deg2rad(self.angle))
-
-        # update velocity
-        self.velocity[0] += self.acceleration[0]
-        self.velocity[1] += self.acceleration[1]
-
-        #max velocity
-        if self.velocity[0] != max(-1000, min(1000, self.velocity[0])):
-            self.velocity[0] = max(-1000, min(1000, self.velocity[0]))
-            self.acceleration[0] == 0
-        if self.velocity[1] != max(-1000, min(1000, self.velocity[1])):
-            self.velocity[1] = max(-1000, min(1000, self.velocity[1]))
-            self.acceleration[1] == 0
-
-        # update position
-        self.position[0] += self.velocity[0] * dt
-        self.position[1] += self.velocity[1] * dt
-
     def reset_accel(self):
         self.acceleration[1] = 5 # Gravity
         self.acceleration[0] = 0
         
-
     def update(self):
         pass
 
@@ -98,12 +65,50 @@ class Spaceship(CorePhysics):
             self.rotate_right = True
 
     def fire_bullet(self):
-
         bullet_vel_x = -bullet_speed * np.sin(np.deg2rad(self.angle))
         bullet_vel_y = -bullet_speed * np.cos(np.deg2rad(self.angle))
-        bullet = Bullet(self.position[0], self.position[1])
+        bullet = Bullet(self.position[0],
+                        self.position[1],
+                        self.angle)
         bullet.velocity = [bullet_vel_x, bullet_vel_y]
         return bullet
+    
+    def apply_physics(self):
+        self.reset_accel()
+        
+        # rotation
+        if self.rotate_left and self.rotate_right:
+            pass
+        elif self.rotate_left:
+            self.angle = (self.angle + rotation_speed)
+        elif self.rotate_right:
+            self.angle = (self.angle - rotation_speed)
+        
+        # thrust
+        if self.fuel <= 0:
+            self.fuel = 0
+            self.thrusting = False
+        elif self.thrusting:
+            self.acceleration[0] += -20 * np.sin(np.deg2rad(self.angle))
+            self.acceleration[1] += -20 * np.cos(np.deg2rad(self.angle))
+            self.fuel -= consume_fuel_rate * dt
+
+        # update velocity
+        self.velocity[0] += self.acceleration[0]
+        self.velocity[1] += self.acceleration[1]
+
+        #max velocity
+        if self.velocity[0] != max(-1000, min(1000, self.velocity[0])):
+            self.velocity[0] = max(-1000, min(1000, self.velocity[0]))
+            self.acceleration[0] == 0
+        if self.velocity[1] != max(-1000, min(1000, self.velocity[1])):
+            self.velocity[1] = max(-1000, min(1000, self.velocity[1]))
+            self.acceleration[1] == 0
+
+        # update position
+        self.position[0] += self.velocity[0] * dt
+        self.position[1] += self.velocity[1] * dt
+
     def update(self):
         # update Spaceship
         self.apply_physics()
@@ -112,14 +117,6 @@ class Spaceship(CorePhysics):
         self.rotate_left = False
         self.rotate_right = False
 
-       # fuel consumption
-        self.fuel -= consume_fuel_rate * dt
-        if self.fuel < 0:
-            self.fuel = 0
-            self.thrusting = False
-
-
-    
     def __repr__(self):
         return (
             f'Spaceship:\t{self.player_tag}\n'
@@ -133,16 +130,13 @@ class Spaceship(CorePhysics):
         )
     
 class Bullet(CorePhysics):
-    def __init__(self, x, y):
+    def __init__(self, x, y, angle):
         super().__init__(x, y) #position from spaceship, velocity from spaceship angle and bullet speed cons
-
-        self.velocity = [x, y]
-        
+        self.velocity = (x, y)
+        self.angle = angle
 
         #rectangle laser bullet
-        self.image = pygame.Surface((10, 2))
-        self.image.fill((255, 0, 0))
-        self.rect = self.image.get_rect(center=(x, y))
+        self.sprite = BulletSprite(self.velocity, self.angle)
 
     def update(self):
 
