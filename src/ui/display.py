@@ -1,7 +1,7 @@
 from __future__ import annotations
+from typing import Any
 import pygame
 import config
-import re
 
 class Display:
     '''
@@ -27,7 +27,12 @@ class Display:
     def set_scene(self, scene: object):
         self.active_scene = scene
     
-    def edit_config(self, variable: str, value: int | tuple | bool):
+    def edit_config(self, variable: str, value: Any):
+        '''
+        DANGEROUS!!
+
+        This function edits the config file. Wrong use will corrupt the config file, render the game unplayable.
+        '''
         with open('config.py', 'r') as f:
             lines = f.readlines()
         with open('config.py', 'w') as f:
@@ -38,6 +43,9 @@ class Display:
                     f.write(line)
 
     def process(self):
+        '''
+        Updates and draws all pygame groups, for the active scene.
+        '''
         import scenes
         if isinstance(self.active_scene, scenes.GameScreen):
             self.active_scene.objects.update()

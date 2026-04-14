@@ -22,3 +22,4 @@ class MainGame:
             self.input_handler.handle_events()
             self.display.process()
             self.clock.tick(self.FPS)
+        pygame.quit()

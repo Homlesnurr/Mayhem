@@ -4,6 +4,9 @@ from typing import Callable
 from abc import ABC, abstractmethod
 
 class SpriteBase(pygame.sprite.Sprite, ABC):
+    '''
+    Base class for all sprites, requiring an update() function, and making them a pygame.sprite.Sprite.
+    '''
     def __init__(self):
         super().__init__()
 
@@ -13,6 +16,11 @@ class SpriteBase(pygame.sprite.Sprite, ABC):
 
 
 class BulletSprite(SpriteBase):
+    '''
+    Sprite for bullet. Takes position and angle value to initialize location.
+
+    update(pos, angle) to move the sprite.
+    '''
     def __init__(self, pos: list[int, int], angle: float):
         super().__init__()
         self.bullet_surf = pygame.Surface((6, 20), pygame.SRCALPHA)
@@ -39,6 +47,11 @@ class BulletSprite(SpriteBase):
 
 
 class SpaceshipSprite(SpriteBase):
+    '''
+    Sprite for bullet. Takes position value to initialize location.
+
+    update(pos, angle) to move the sprite.
+    '''
     def __init__(self, pos: list[int, int]):
         super().__init__()
         self.ship_sprite = ImageLoader('assets\\rocket_ship_blue.png', scale=0.7)
@@ -61,10 +74,11 @@ class SpaceshipSprite(SpriteBase):
         angle = self.rotate_sprite(angle)
         pos = self.set_pos(pos)
 
-
 class RoundedButton(SpriteBase):
     '''
     Class for making rounded buttons.
+
+    Takes location of center, size, color and text. And has potential for adding functions to button
     '''
     def __init__(self,
                  x: int,
@@ -74,7 +88,7 @@ class RoundedButton(SpriteBase):
                  color: tuple[int,int,int] = (255,255,255),
                  text: str = None,
                  click_func: Callable | None = None,
-                 hover_func: Callable | None = None) -> None:
+                 hoverable: bool = True) -> None:
         super().__init__()
         self.color = color
         self.curr_color = color
@@ -97,23 +111,17 @@ class RoundedButton(SpriteBase):
         self.rect = button_rect
 
         self.click_func = click_func
-        self.hover_func = hover_func
+        self.hoverable = hoverable
 
 
     def update(self):
-        mouse_sprite = pygame.sprite.Sprite()
-        mouse_sprite.rect = pygame.Rect(*pygame.mouse.get_pos(), 1,1)
-        if mouse_sprite.rect.colliderect(self.rect):
-            self.curr_color = self.hover_color
-        else:
-            self.curr_color = self.color
         pygame.draw.rect(self.image, self.curr_color, (0,0,*self.size), border_radius=5)
         self.image.blit(self.text_surface, self.text_rect)
-        self.hovered=False
-
+        self.curr_color = self.color
 
     def hover(self):
-        self.hovered = True
+        if self.hoverable:
+            self.curr_color = self.hover_color
 
 
     def click(self):
@@ -124,6 +132,9 @@ class RoundedButton(SpriteBase):
 
 
 class ImageLoader(SpriteBase):
+    '''
+    Loads image, and makes a self.image and self.rect, which is required for every pygame.sprite.Sprite.
+    '''
     def __init__(self,
                  image_path: str = None,
                  size: tuple[int, int] = None,
@@ -143,6 +154,9 @@ class ImageLoader(SpriteBase):
         pass
 
 class Map(SpriteBase):
+    '''
+    Sprite for the background of the game screen.
+    '''
     def __init__(self):
         super().__init__()
         border = 10 #7
@@ -163,5 +177,3 @@ class Map(SpriteBase):
 
     def update(self):
         pass
-
-    

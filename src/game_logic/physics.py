@@ -12,6 +12,9 @@ bullet_speed = 350
 
 
 class PhysicsEngine:
+    '''
+    Container for every element where physics are required.
+    '''
     def __init__(self):
         self.spaceships = []
         self.bullets = pygame.sprite.Group()
@@ -48,6 +51,9 @@ class CorePhysics(pygame.sprite.Sprite):
 
 
 class Spaceship(CorePhysics):
+    '''
+    Spaceship class, stores all data pertaining to the spaceship.
+    '''
     def __init__(self, x: int, y: int, player_tag: str):
         super().__init__(x, y)
         self.player_tag = player_tag
@@ -137,6 +143,9 @@ class Spaceship(CorePhysics):
         )
     
 class Bullet(CorePhysics):
+    '''
+    Bullet class, creates a bullet belonging to one player. Collisions will only apply to spaceships other than the one shooting.
+    '''
     def __init__(self, x, y, v, angle):
         super().__init__(x, y) #position from spaceship, velocity from spaceship angle and bullet speed cons
         self.position = np.array([x, y])
@@ -153,9 +162,3 @@ class Bullet(CorePhysics):
         self.sprite.update(self.position, self.angle)
         self.image = self.sprite.image
         self.rect = self.sprite.rect
-
-        #add lifetime for bullet later
-
-
-
-        #abel fikse at vises på skjermen
