@@ -15,13 +15,9 @@ class GameScreen(SceneBase):
         height = config.screen_dimensions[1]
         background = ImageLoader('assets\\temp_background.jpeg', (width, height))
         self.map = Map()
-        self.player1 = Spaceship(player_tag = 'Player 1',
-                                 x = 100,
-                                 y=100)
+        self.player1 = Spaceship('Player 1')
         
-        self.player2 = Spaceship(player_tag = 'Player 2',
-                                 x = config.screen_dimensions[0] - 100,
-                                 y=100)
+        self.player2 = Spaceship('Player 2')
         self.add(background)
         self.physics_engine.add_solid(self.map)
         self.physics_engine.add_spaceship(self.player1)

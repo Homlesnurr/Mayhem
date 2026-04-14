@@ -63,7 +63,13 @@ class Spaceship(CorePhysics):
     '''
     Spaceship class, stores all data pertaining to the spaceship.
     '''
-    def __init__(self, player_tag: str, x: int=100, y: int=100):
+    def __init__(self, player_tag: str):
+        if player_tag == 'Player 1':
+            x = 100
+            y = 100
+        else:
+            x = config.screen_dimensions[0] - 100
+            y = 100
         super().__init__(x, y)
         self.player_tag = player_tag
         self.fuel = starting_fuel
@@ -106,7 +112,7 @@ class Spaceship(CorePhysics):
             self.acceleration = [0,0]
         bullets_hit = pygame.sprite.spritecollide(self.sprite, physics_engine.bullets, False, pygame.sprite.collide_mask)
         for bullet in bullets_hit:
-            if bullet.owner != self:
+            if bullet.owner.player_tag != self.player_tag:
                 physics_engine.add_spaceship(Spaceship(self.player_tag))
                 bullet.kill()
                 self.kill()
