@@ -54,7 +54,7 @@ class SpaceshipSprite(SpriteBase):
     '''
     def __init__(self, pos: list[int, int]):
         super().__init__()
-        self.ship_sprite = ImageLoader('assets\\rocket_ship_blue.png', scale=0.7)
+        self.ship_sprite = ImageLoader('assets\\rocket_ship_blue.png', scale=0.5)
         self.pos = pos
         self.image = self.ship_sprite.image
         self.image_base = self.image.copy()
@@ -73,6 +73,8 @@ class SpaceshipSprite(SpriteBase):
                angle: int | float = 0):
         angle = self.rotate_sprite(angle)
         pos = self.set_pos(pos)
+        return self.image, self.rect
+
 
 class RoundedButton(SpriteBase):
     '''
@@ -153,6 +155,7 @@ class ImageLoader(SpriteBase):
     def update(self):
         pass
 
+
 class Map(SpriteBase):
     '''
     Sprite for the background of the game screen.
@@ -163,8 +166,6 @@ class Map(SpriteBase):
         width = config.screen_dimensions[0]
         height = config.screen_dimensions[1]
         map_surface = pygame.Surface((width, height), pygame.SRCALPHA)
-        background = ImageLoader('assets\\temp_background.jpeg', (width, height))
-        map_surface.blit(background.image, (0,0))
         # Horizontal border
         pygame.draw.rect(map_surface, (167,167,167), (0, 0, width,border))
         pygame.draw.rect(map_surface, (167,167,167), (0, height-border, width, height))

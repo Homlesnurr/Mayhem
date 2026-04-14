@@ -11,16 +11,19 @@ class InputHandler:
         self.running = True
 
     def player_input(self,  pressed: pygame.key.ScancodeWrapper, clicked: int = None):
-        ship1, ship2 = self.display.active_scene.physics_engine.spaceships
-        if pressed[pygame.K_w]     or clicked == pygame.K_w:       ship1.thrust()
-        if pressed[pygame.K_a]     or clicked == pygame.K_a:       ship1.rotate('left')
-        if pressed[pygame.K_d]     or clicked == pygame.K_d:       ship1.rotate('right')
-        if pressed[pygame.K_s]     or clicked == pygame.K_s:       ship1.fire_bullet(); self.display.active_scene.physics_engine.bullets.add(ship1.bullet)
+        ships = self.display.active_scene.physics_engine.spaceships
+        for ship in ships:
+            if ship.player_tag == 'Player 1':
+                if pressed[pygame.K_w]     or clicked == pygame.K_w:       ship.thrust()
+                if pressed[pygame.K_a]     or clicked == pygame.K_a:       ship.rotate('left')
+                if pressed[pygame.K_d]     or clicked == pygame.K_d:       ship.rotate('right')
+                if pressed[pygame.K_s]     or clicked == pygame.K_s:       ship.fire_bullet(self.display.active_scene.physics_engine)
 
-        if pressed[pygame.K_UP]    or clicked == pygame.K_UP:      ship2.thrust()
-        if pressed[pygame.K_LEFT]  or clicked == pygame.K_LEFT:    ship2.rotate('left')
-        if pressed[pygame.K_RIGHT] or clicked == pygame.K_RIGHT:   ship2.rotate('right')
-        if pressed[pygame.K_DOWN]  or clicked == pygame.K_DOWN:    ship2.fire_bullet(); self.display.active_scene.physics_engine.bullets.add(ship2.bullet)
+            if ship.player_tag == 'Player 2':
+                if pressed[pygame.K_UP]    or clicked == pygame.K_UP:      ship.thrust()
+                if pressed[pygame.K_LEFT]  or clicked == pygame.K_LEFT:    ship.rotate('left')
+                if pressed[pygame.K_RIGHT] or clicked == pygame.K_RIGHT:   ship.rotate('right')
+                if pressed[pygame.K_DOWN]  or clicked == pygame.K_DOWN:    ship.fire_bullet(self.display.active_scene.physics_engine)
 
 
     def handle_events(self):

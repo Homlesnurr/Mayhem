@@ -1,6 +1,7 @@
-from .physics import Spaceship, PhysicsEngine
+from .physics import Spaceship, PhysicsEngine, Bullet
 
 __all__ = [
     Spaceship,
-    PhysicsEngine
+    PhysicsEngine,
+    Bullet
 ]

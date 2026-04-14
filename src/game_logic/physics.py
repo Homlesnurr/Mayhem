@@ -16,20 +16,29 @@ class PhysicsEngine:
     Container for every element where physics are required.
     '''
     def __init__(self):
-        self.spaceships = []
+        self.solid = pygame.sprite.Group()
+        self.spaceships = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
 
+    def add_solid(self, solid: Map):
+        self.solid.add(solid)
+
     def add_spaceship(self, ship: Spaceship):
-        self.spaceships.append(ship)
+        self.spaceships.add(ship)
+
+    def add_bullet(self, bullet: Bullet):
+        self.bullets.add(bullet)
     
-    def remove_spaceship(self, ship: Spaceship):
-        self.spaceships.remove(ship)
+    def draw(self, surface):
+        self.solid.draw(surface)
+        self.spaceships.draw(surface)
+        self.bullets.draw(surface)
     
     def update(self):
         # må legge til group update for alle objects senere
+        self.solid.update()
         self.bullets.update()
-        for spaceship in self.spaceships:
-            spaceship.update()
+        self.spaceships.update(self)
 
 class CorePhysics(pygame.sprite.Sprite):
     """
@@ -54,7 +63,7 @@ class Spaceship(CorePhysics):
     '''
     Spaceship class, stores all data pertaining to the spaceship.
     '''
-    def __init__(self, x: int, y: int, player_tag: str):
+    def __init__(self, player_tag: str, x: int=100, y: int=100):
         super().__init__(x, y)
         self.player_tag = player_tag
         self.fuel = starting_fuel
@@ -63,6 +72,8 @@ class Spaceship(CorePhysics):
         self.rotate_left = False
         self.rotate_right = False
         self.sprite = SpaceshipSprite((x,y))
+        self.image = self.sprite.image
+        self.rect = self.sprite.rect
 
     def thrust(self):
         self.thrusting = True
@@ -73,7 +84,7 @@ class Spaceship(CorePhysics):
         elif dir == 'r' or dir == 'right':
             self.rotate_right = True
 
-    def fire_bullet(self):
+    def fire_bullet(self, physics_engine: PhysicsEngine):
         if self.shoot_cd > 0:
             return
         self.shoot_cd = 0.3
@@ -83,10 +94,24 @@ class Spaceship(CorePhysics):
         self.bullet = Bullet(self.position[0],
                         self.position[1],
                         bullet_velocity,
-                        self.angle)
+                        self.angle,
+                        self)
+        physics_engine.add_bullet(self.bullet)
+                        
     
-    def apply_physics(self):
+    def apply_physics(self, physics_engine: PhysicsEngine):
         self.reset_accel()
+        if pygame.sprite.spritecollide(self.sprite, physics_engine.solid, False, pygame.sprite.collide_mask):
+            self.velocity = [0,0]
+            self.acceleration = [0,0]
+        bullets_hit = pygame.sprite.spritecollide(self.sprite, physics_engine.bullets, False, pygame.sprite.collide_mask)
+        for bullet in bullets_hit:
+            if bullet.owner != self:
+                physics_engine.add_spaceship(Spaceship(self.player_tag))
+                bullet.kill()
+                self.kill()
+
+        
         
         # rotation
         if self.rotate_left and self.rotate_right:
@@ -117,14 +142,16 @@ class Spaceship(CorePhysics):
             self.velocity[1] = max(-1000, min(1000, self.velocity[1]))
             self.acceleration[1] == 0
 
+
         # update position
         self.position[0] += self.velocity[0] * dt
         self.position[1] += self.velocity[1] * dt
 
-    def update(self):
+    def update(self, physics_engine: PhysicsEngine):
+
         # update Spaceship
-        self.apply_physics()
-        self.sprite.update(self.position, self.angle)
+        self.apply_physics(physics_engine)
+        self.image, self.rect = self.sprite.update(self.position, self.angle)
         self.shoot_cd -= dt
         self.thrusting = False
         self.rotate_left = False
@@ -146,11 +173,13 @@ class Bullet(CorePhysics):
     '''
     Bullet class, creates a bullet belonging to one player. Collisions will only apply to spaceships other than the one shooting.
     '''
-    def __init__(self, x, y, v, angle):
+    def __init__(self, x, y, v, angle, owner: Spaceship):
         super().__init__(x, y) #position from spaceship, velocity from spaceship angle and bullet speed cons
         self.position = np.array([x, y])
         self.velocity = np.array(v)
         self.angle = angle
+        self.owner = owner
+        self.lifetime = 5
 
         #rectangle laser bullet
         self.sprite = BulletSprite(self.velocity, self.angle)
@@ -158,6 +187,9 @@ class Bullet(CorePhysics):
         self.rect = self.sprite.rect
 
     def update(self):
+        if self.lifetime <= 0:
+            self.kill()
+        self.lifetime -= dt
         self.position = self.position + self.velocity * dt
         self.sprite.update(self.position, self.angle)
         self.image = self.sprite.image
