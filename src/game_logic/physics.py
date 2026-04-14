@@ -8,7 +8,7 @@ dt = 1/config.FPS
 starting_fuel = 100
 rotation_speed = 2
 consume_fuel_rate = 10
-bullet_speed = 350
+bullet_speed = 500
 
 
 class PhysicsEngine:
@@ -52,7 +52,7 @@ class CorePhysics(pygame.sprite.Sprite):
         self.angle = 0.0
 
     def reset_accel(self):
-        self.acceleration[1] = 5 # Gravity
+        self.acceleration[1] = 3 # Gravity
         self.acceleration[0] = 0
         
     def update(self):
@@ -107,15 +107,27 @@ class Spaceship(CorePhysics):
     
     def apply_physics(self, physics_engine: PhysicsEngine):
         self.reset_accel()
-        if pygame.sprite.spritecollide(self.sprite, physics_engine.solid, False, pygame.sprite.collide_mask):
-            self.velocity = [0,0]
-            self.acceleration = [0,0]
         bullets_hit = pygame.sprite.spritecollide(self.sprite, physics_engine.bullets, False, pygame.sprite.collide_mask)
         for bullet in bullets_hit:
             if bullet.owner.player_tag != self.player_tag:
                 physics_engine.add_spaceship(Spaceship(self.player_tag))
                 bullet.kill()
                 self.kill()
+                return
+            
+        if pygame.sprite.spritecollide(self.sprite, physics_engine.solid, False, pygame.sprite.collide_mask):
+            physics_engine.add_spaceship(Spaceship(self.player_tag))
+            self.kill()
+            return
+
+        collided_ships = pygame.sprite.spritecollide(self.sprite, physics_engine.spaceships, False, pygame.sprite.collide_mask)
+        for ship in collided_ships:
+            if ship != self:
+                physics_engine.add_spaceship(Spaceship(self.player_tag))
+                physics_engine.add_spaceship(Spaceship(ship.player_tag))
+                ship.kill()
+                self.kill()
+                return
 
         
         
@@ -127,13 +139,14 @@ class Spaceship(CorePhysics):
         elif self.rotate_right:
             self.angle = (self.angle - rotation_speed)
         
+
         # thrust
         if self.fuel <= 0:
             self.fuel = 0
             self.thrusting = False
         elif self.thrusting:
-            self.acceleration[0] += -20 * np.sin(np.deg2rad(self.angle))
-            self.acceleration[1] += -20 * np.cos(np.deg2rad(self.angle))
+            self.acceleration[0] += -12 * np.sin(np.deg2rad(self.angle))
+            self.acceleration[1] += -12 * np.cos(np.deg2rad(self.angle))
             self.fuel -= consume_fuel_rate * dt
 
         # update velocity
@@ -141,11 +154,11 @@ class Spaceship(CorePhysics):
         self.velocity[1] += self.acceleration[1]
 
         #max velocity
-        if self.velocity[0] != max(-1000, min(1000, self.velocity[0])):
-            self.velocity[0] = max(-1000, min(1000, self.velocity[0]))
+        if self.velocity[0] != max(-200, min(200, self.velocity[0])):
+            self.velocity[0] = max(-200, min(200, self.velocity[0]))
             self.acceleration[0] == 0
-        if self.velocity[1] != max(-1000, min(1000, self.velocity[1])):
-            self.velocity[1] = max(-1000, min(1000, self.velocity[1]))
+        if self.velocity[1] != max(-200, min(200, self.velocity[1])):
+            self.velocity[1] = max(-200, min(200, self.velocity[1]))
             self.acceleration[1] == 0
 
 
