@@ -75,6 +75,7 @@ class SpaceshipSprite(SpriteBase):
         pos = self.set_pos(pos)
         return self.image, self.rect
 
+
 class ObstacleSprite(SpriteBase):
     def __init__(self, pos: list[int, int], angle: float):
         super().__init__()
@@ -110,6 +111,7 @@ class ObstacleSprite(SpriteBase):
         self.rotate_sprite(angle)
         self.set_pos(pos)
 
+
 class FueldropSprite(ObstacleSprite):
     def __init__(self, pos: list[int, int], angle: float):
         super().__init__(pos, angle)
@@ -132,6 +134,7 @@ class FueldropSprite(ObstacleSprite):
                angle: int | float = 0):
         self.rotate_sprite(angle)
         self.set_pos(pos)
+
 
 class RoundedButton(SpriteBase):
     '''
