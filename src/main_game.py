@@ -16,6 +16,7 @@ class MainGame:
 
     def __init__(self):
         self.running = True
+        self.run()
 
     def run(self):
         while self.input_handler.running:
