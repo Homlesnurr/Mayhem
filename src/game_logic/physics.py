@@ -35,10 +35,31 @@ class PhysicsEngine:
         self.bullets.draw(surface)
     
     def update(self):
-        # må legge til group update for alle objects senere
+        # Bullets colliding with ships
+        collisions = pygame.sprite.groupcollide(self.spaceships, self.bullets, False, False, pygame.sprite.collide_mask)
+        for ship, bullets_hit in collisions.items():                                                               
+            for bullet in bullets_hit:
+                if bullet.owner is not ship:
+                    ship.kill_self(self)
+                    bullet.kill()
+
+        # Ships colliding with ships ( ONLY WORKS WHEN THERE ARE 2 SHIPS )
+        if len(pygame.sprite.spritecollide(list(self.spaceships)[0], self.spaceships, False, pygame.sprite.collide_mask)) > 1:
+            [ship.kill_self(self) for ship in self.spaceships]
+                
+        # Ships colliding with solid objects
+        for ship in self.spaceships:
+            if pygame.sprite.spritecollide(ship, self.solid, False, pygame.sprite.collide_mask):
+                ship.kill_self(self)
+
+        # Bullets colliding with solid objects
+        for bullet in self.bullets:
+            if pygame.sprite.spritecollide(bullet, self.solid, False, pygame.sprite.collide_mask):
+                bullet.kill()
+        
         self.solid.update()
-        self.bullets.update(self)
-        self.spaceships.update(self)
+        self.bullets.update()
+        self.spaceships.update()
 
 class CorePhysics(pygame.sprite.Sprite):
     """
@@ -105,31 +126,8 @@ class Spaceship(CorePhysics):
         physics_engine.add_bullet(self.bullet)
                         
     
-    def apply_physics(self, physics_engine: PhysicsEngine):
+    def apply_physics(self):
         self.reset_accel()
-        bullets_hit = pygame.sprite.spritecollide(self.sprite, physics_engine.bullets, False, pygame.sprite.collide_mask)
-        for bullet in bullets_hit:
-            if bullet.owner.player_tag != self.player_tag:
-                physics_engine.add_spaceship(Spaceship(self.player_tag))
-                bullet.kill()
-                self.kill()
-                return
-        if pygame.sprite.spritecollide(self.sprite, physics_engine.solid, False, pygame.sprite.collide_mask):
-            physics_engine.add_spaceship(Spaceship(self.player_tag))
-            self.kill()
-            return
-
-        collided_ships = pygame.sprite.spritecollide(self.sprite, physics_engine.spaceships, False, pygame.sprite.collide_mask)
-        for ship in collided_ships:
-            if ship != self:
-                physics_engine.add_spaceship(Spaceship(self.player_tag))
-                physics_engine.add_spaceship(Spaceship(ship.player_tag))
-                ship.kill()
-                self.kill()
-                return
-
-        
-        
         # rotation
         if self.rotate_left and self.rotate_right:
             pass
@@ -165,10 +163,15 @@ class Spaceship(CorePhysics):
         self.position[0] += self.velocity[0] * dt
         self.position[1] += self.velocity[1] * dt
 
-    def update(self, physics_engine: PhysicsEngine):
+    def kill_self(self, physics_engine: PhysicsEngine):
+        physics_engine.add_spaceship(Spaceship(self.player_tag))
+        self.kill()
+
+
+    def update(self):
 
         # update Spaceship
-        self.apply_physics(physics_engine)
+        self.apply_physics()
         self.image, self.rect = self.sprite.update(self.position, self.angle)
         self.shoot_cd -= dt
         self.thrusting = False
@@ -204,12 +207,9 @@ class Bullet(CorePhysics):
         self.image = self.sprite.image
         self.rect = self.sprite.rect
 
-    def update(self, physics_engine: PhysicsEngine):
+    def update(self):
         if self.lifetime <= 0:
             self.kill()
-        if pygame.sprite.spritecollide(self.sprite, physics_engine.solid, False, pygame.sprite.collide_mask):
-            self.kill()
-            return
         self.lifetime -= dt
         self.position = self.position + self.velocity * dt
         self.sprite.update(self.position, self.angle)
@@ -231,9 +231,10 @@ class Obstacle(pygame.sprite.Sprite):
 
     def rotation(self):
         self.angle = (self.angle + rotation_speed/2) % 360
+        
     def update(self):
         self.rotation()
-        self.sprite.update(self.position, self.angle)
+        self.sprite.update(self.angle)
         self.image = self.sprite.image
         self.rect = self.sprite.rect
 
@@ -258,3 +259,33 @@ class Fueldrop(pygame.sprite.Sprite):
         self.image = self.sprite.image
         self.rect = self.sprite.rect
     
+
+class Stats():
+    def __init__(self):
+        super().__init__()
+
+
+    def change_score(self, player: str, score: int):
+        if player == 'Player 1': self._score1 += score
+        if player == 'Player 2': self._score2 += score
+
+    def fuel_guage(self, screen, spaceship: Spaceship):
+        width = 300
+        height = 50
+        if spaceship.player_tag == 'Player 1':
+            x, y = 0, 0
+        elif spaceship.player_tag == 'Player 2':
+            x, y = config.screen_dimensions[0]-width, 0
+        self.draw_bar(screen, x, y, width, height, spaceship.fuel, (0,255,0))
+
+    # draw bar for fuel taken from vincent Anuwat van Duin's second assignment in Objektorientert programmering
+    def draw_bar(screen, x, y, width, height, value, color):
+        # Background bar
+        pygame.draw.rect(screen, (60, 60, 60), (x, y, width, height), border_radius=5)
+        
+        # Filled part
+        fill_width = (value / 100) * width
+        pygame.draw.rect(screen, color, (x, y, fill_width, height), border_radius=5)
+
+    def update(self):
+        pass

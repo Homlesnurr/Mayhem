@@ -102,15 +102,8 @@ class ObstacleSprite(SpriteBase):
         self.rect = self.image.get_rect(center = self.pos)
     
     
-    def set_pos(self, pos):
-        self.pos = pos
-        self.rect.center = self.pos
-
-    def update(self,
-               pos: list[int, int] = [config.screen_dimensions[0] // 2, config.screen_dimensions[1] // 2],
-               angle: int | float = 0):
+    def update(self, angle: int | float = 0):
         self.rotate_sprite(angle)
-        self.set_pos(pos)
 
 
 class FueldropSprite(ObstacleSprite):
@@ -240,11 +233,3 @@ class Map(SpriteBase):
     def update(self):
         pass
 
-# draw bar for fuel taken from vincent Anuwat van Duin's second assignment in Objektorientert programmering
-def draw_bar(screen, x, y, width, height, value, color):
-    # Background bar
-    pygame.draw.rect(screen, (60, 60, 60), (x, y, width, height), border_radius=5)
-    
-    # Filled part
-    fill_width = (value / 100) * width
-    pygame.draw.rect(screen, color, (x, y, fill_width, height), border_radius=5)

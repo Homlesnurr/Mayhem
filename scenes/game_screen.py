@@ -17,7 +17,6 @@ class GameScreen(SceneBase):
         self.map = Map()
         self.obstacle = Obstacle(600, 300)
         self.player1 = Spaceship('Player 1')
-        
         self.player2 = Spaceship('Player 2')
         self.add(background)
         self.physics_engine.add_solid(self.map)
@@ -30,3 +29,4 @@ class GameScreen(SceneBase):
 
     def remove(self, element):
         self.objects.remove(element)
+
