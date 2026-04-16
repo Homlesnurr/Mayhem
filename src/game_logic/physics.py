@@ -37,7 +37,7 @@ class PhysicsEngine:
     def update(self):
         # må legge til group update for alle objects senere
         self.solid.update()
-        self.bullets.update()
+        self.bullets.update(self)
         self.spaceships.update(self)
 
 class CorePhysics(pygame.sprite.Sprite):
@@ -114,7 +114,6 @@ class Spaceship(CorePhysics):
                 bullet.kill()
                 self.kill()
                 return
-            
         if pygame.sprite.spritecollide(self.sprite, physics_engine.solid, False, pygame.sprite.collide_mask):
             physics_engine.add_spaceship(Spaceship(self.player_tag))
             self.kill()
@@ -205,9 +204,12 @@ class Bullet(CorePhysics):
         self.image = self.sprite.image
         self.rect = self.sprite.rect
 
-    def update(self):
+    def update(self, physics_engine: PhysicsEngine):
         if self.lifetime <= 0:
             self.kill()
+        if pygame.sprite.spritecollide(self.sprite, physics_engine.solid, False, pygame.sprite.collide_mask):
+            self.kill()
+            return
         self.lifetime -= dt
         self.position = self.position + self.velocity * dt
         self.sprite.update(self.position, self.angle)

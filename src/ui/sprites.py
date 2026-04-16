@@ -83,7 +83,7 @@ class ObstacleSprite(SpriteBase):
         self.height = 300
 
         self.obstacle_surf = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-        self.obstacle_surf.fill((100, 100, 100))
+        self.obstacle_surf.fill((167,167,167))
         
         self.pos = pos
         self.image_base = self.obstacle_surf
