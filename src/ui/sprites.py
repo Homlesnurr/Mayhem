@@ -109,7 +109,30 @@ class ObstacleSprite(SpriteBase):
                angle: int | float = 0):
         self.rotate_sprite(angle)
         self.set_pos(pos)
+
+class FueldropSprite(ObstacleSprite):
+    def __init__(self, pos: list[int, int], angle: float):
+        super().__init__(pos, angle)
+        self.ship_sprite = ImageLoader('assets\\barrel.png', scale=0.6)
+        self.pos = pos
+        self.image = self.ship_sprite.image
+        self.image_base = self.image.copy()
+        self.rect = self.image.get_rect(center = self.pos)
         
+    def rotate_sprite(self, angle):
+        self.image = pygame.transform.rotate(self.image_base, angle)
+        self.rect = self.image.get_rect(center = self.pos)
+    
+    def set_pos(self, pos):
+        self.pos = pos
+        self.rect.center = (pos)
+    
+    def update(self,
+               pos: list[int, int] = [config.screen_dimensions[0] // 2, config.screen_dimensions[1] // 2],
+               angle: int | float = 0):
+        self.rotate_sprite(angle)
+        self.set_pos(pos)
+
 class RoundedButton(SpriteBase):
     '''
     Class for making rounded buttons.
@@ -212,3 +235,12 @@ class Map(SpriteBase):
 
     def update(self):
         pass
+
+# draw bar for fuel taken from vincent Anuwat van Duin's second assignment in Objektorientert programmering
+def draw_bar(screen, x, y, width, height, value, color):
+    # Background bar
+    pygame.draw.rect(screen, (60, 60, 60), (x, y, width, height), border_radius=5)
+    
+    # Filled part
+    fill_width = (value / 100) * width
+    pygame.draw.rect(screen, color, (x, y, fill_width, height), border_radius=5)

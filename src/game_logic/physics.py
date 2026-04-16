@@ -2,7 +2,7 @@ from __future__ import annotations
 import pygame
 import numpy as np
 import config
-from src.ui import SpaceshipSprite, Map, BulletSprite, ObstacleSprite
+from src.ui import SpaceshipSprite, Map, BulletSprite, ObstacleSprite, FueldropSprite
 #temp const
 dt = 1/config.FPS
 starting_fuel = 100
@@ -235,18 +235,20 @@ class Obstacle(pygame.sprite.Sprite):
         self.image = self.sprite.image
         self.rect = self.sprite.rect
 
-class Fueldrop(Obstacle):
+class Fueldrop(pygame.sprite.Sprite):
     """
     Fueldrop class, creates a obstacle that can be collided with and refills fuel when collided with.
     """
     def __init__(self, x, y):
-        super().__init__(x, y)
+        super().__init__()
+        self.position = np.array([x, y])
+        self.angle = 0.0
         self.sprite = FueldropSprite(self.position, self.angle)
         self.image = self.sprite.image
         self.rect = self.sprite.rect
     
     def rotation(self):
-        self.angle = (self.angle + rotation_speed/2) % 360
+        self.angle = (self.angle + rotation_speed/8) % 360
 
     def update(self):
         self.rotation()
