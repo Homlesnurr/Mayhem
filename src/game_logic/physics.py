@@ -1,8 +1,9 @@
 from __future__ import annotations
+from matplotlib.pylab import angle
 import pygame
 import numpy as np
 import config
-from src.ui import SpaceshipSprite, Map, BulletSprite
+from src.ui import SpaceshipSprite, Map, BulletSprite, ObstacleSprite
 #temp const
 dt = 1/config.FPS
 starting_fuel = 100
@@ -213,3 +214,27 @@ class Bullet(CorePhysics):
         self.sprite.update(self.position, self.angle)
         self.image = self.sprite.image
         self.rect = self.sprite.rect
+
+
+class Obstacle(pygame.sprite.Sprite):
+    '''
+    Obstacle class, creates an obstacle that can be collided with. Obstacles are solid and cannot be passed through.
+    '''
+    def __init__(self, x, y):
+        super().__init__()
+        self.position = np.array([x, y])
+        self.angle = 0.0
+        self.sprite = ObstacleSprite(self.position, self.angle)
+        self.image = self.sprite.image
+        self.rect = self.sprite.rect
+
+    def rotation(self):
+        self.angle = (self.angle + rotation_speed/2) % 360
+    def update(self):
+        self.rotation()
+        self.sprite.update(self.position, self.angle)
+        self.image = self.sprite.image
+        self.rect = self.sprite.rect
+
+class Fueldrop(Obstacle):
+    pass

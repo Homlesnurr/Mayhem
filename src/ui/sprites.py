@@ -75,7 +75,41 @@ class SpaceshipSprite(SpriteBase):
         pos = self.set_pos(pos)
         return self.image, self.rect
 
+class ObstacleSprite(SpriteBase):
+    def __init__(self, pos: list[int, int], angle: float):
+        super().__init__()
 
+        self.width = 100
+        self.height = 300
+
+        self.obstacle_surf = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        self.obstacle_surf.fill((100, 100, 100))
+        
+        self.pos = pos
+        self.image_base = self.obstacle_surf
+        self.image = self.image_base.copy()
+       
+        self.rect = self.image.get_rect(center = self.pos)
+
+        self.angle = 0.0
+        self.rotate_sprite(self.angle)
+    
+
+    def rotate_sprite(self, angle):
+        self.image = pygame.transform.rotate(self.image_base, angle)
+        self.rect = self.image.get_rect(center = self.pos)
+    
+    
+    def set_pos(self, pos):
+        self.pos = pos
+        self.rect.center = self.pos
+
+    def update(self,
+               pos: list[int, int] = [config.screen_dimensions[0] // 2, config.screen_dimensions[1] // 2],
+               angle: int | float = 0):
+        self.rotate_sprite(angle)
+        self.set_pos(pos)
+        
 class RoundedButton(SpriteBase):
     '''
     Class for making rounded buttons.
