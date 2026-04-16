@@ -7,4 +7,3 @@ if __name__ == "__main__":
     Entrypoint for game.
     '''
     game = MainGame()
-    game.run()

@@ -21,13 +21,14 @@ class BulletSprite(SpriteBase):
 
     update(pos, angle) to move the sprite.
     '''
-    def __init__(self, pos: list[int, int], angle: float):
+    def __init__(self, pos: list[int, int], angle: float, player_id: str):
         super().__init__()
         self.bullet_surf = pygame.Surface((6, 20), pygame.SRCALPHA)
         self.pos = pos
         self.image_base = self.bullet_surf
         self.image = self.image_base.copy()
-        self.rect = pygame.Surface.fill(self.bullet_surf, (255, 0, 0))
+        self.color = (255,0,0) if player_id == 'Player 1' else (0,255,0)
+        self.rect = pygame.Surface.fill(self.bullet_surf, self.color)
         self.rect.center = self.pos
         self.rotate_sprite(angle)
     
@@ -54,7 +55,7 @@ class SpaceshipSprite(SpriteBase):
     '''
     def __init__(self, pos: list[int, int]):
         super().__init__()
-        self.ship_sprite = ImageLoader('assets\\rocket_ship_blue.png', scale=0.7)
+        self.ship_sprite = ImageLoader('assets\\rocket_ship_blue.png', scale=0.5)
         self.pos = pos
         self.image = self.ship_sprite.image
         self.image_base = self.image.copy()
@@ -101,15 +102,8 @@ class ObstacleSprite(SpriteBase):
         self.rect = self.image.get_rect(center = self.pos)
     
     
-    def set_pos(self, pos):
-        self.pos = pos
-        self.rect.center = self.pos
-
-    def update(self,
-               pos: list[int, int] = [config.screen_dimensions[0] // 2, config.screen_dimensions[1] // 2],
-               angle: int | float = 0):
+    def update(self, angle: int | float = 0):
         self.rotate_sprite(angle)
-        self.set_pos(pos)
 
 
 class FueldropSprite(ObstacleSprite):
@@ -215,6 +209,7 @@ class ImageLoader(SpriteBase):
     def update(self):
         pass
 
+
 class Map(SpriteBase):
     '''
     Sprite for the background of the game screen.
@@ -225,8 +220,6 @@ class Map(SpriteBase):
         width = config.screen_dimensions[0]
         height = config.screen_dimensions[1]
         map_surface = pygame.Surface((width, height), pygame.SRCALPHA)
-        background = ImageLoader('assets\\temp_background.jpeg', (width, height))
-        map_surface.blit(background.image, (0,0))
         # Horizontal border
         pygame.draw.rect(map_surface, (167,167,167), (0, 0, width,border))
         pygame.draw.rect(map_surface, (167,167,167), (0, height-border, width, height))
@@ -239,3 +232,4 @@ class Map(SpriteBase):
 
     def update(self):
         pass
+

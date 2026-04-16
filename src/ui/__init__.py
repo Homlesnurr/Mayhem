@@ -1,4 +1,4 @@
-from .sprites import SpriteBase, RoundedButton, SpaceshipSprite, BulletSprite, ImageLoader, Map
+from .sprites import SpriteBase, RoundedButton, SpaceshipSprite, BulletSprite, ImageLoader, ObstacleSprite,FueldropSprite, Map
 from .display import Display
 
 __all__ = [
@@ -8,5 +8,7 @@ __all__ = [
     ImageLoader,
     SpaceshipSprite,
     BulletSprite,
+    ObstacleSprite,
+    FueldropSprite,
     Map
 ]
