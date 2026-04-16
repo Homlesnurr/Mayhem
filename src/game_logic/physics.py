@@ -238,4 +238,21 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect = self.sprite.rect
 
 class Fueldrop(Obstacle):
-    pass
+    """
+    Fueldrop class, creates a obstacle that can be collided with and refills fuel when collided with.
+    """
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.sprite = FueldropSprite(self.position, self.angle)
+        self.image = self.sprite.image
+        self.rect = self.sprite.rect
+    
+    def rotation(self):
+        self.angle = (self.angle + rotation_speed/2) % 360
+
+    def update(self):
+        self.rotation()
+        self.sprite.update(self.position, self.angle)
+        self.image = self.sprite.image
+        self.rect = self.sprite.rect
+    
