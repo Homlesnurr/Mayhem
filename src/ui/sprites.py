@@ -21,13 +21,14 @@ class BulletSprite(SpriteBase):
 
     update(pos, angle) to move the sprite.
     '''
-    def __init__(self, pos: list[int, int], angle: float):
+    def __init__(self, pos: list[int, int], angle: float, player_id: str):
         super().__init__()
         self.bullet_surf = pygame.Surface((6, 20), pygame.SRCALPHA)
         self.pos = pos
         self.image_base = self.bullet_surf
         self.image = self.image_base.copy()
-        self.rect = pygame.Surface.fill(self.bullet_surf, (255, 0, 0))
+        self.color = (255,0,0) if player_id == 'Player 1' else (0,255,0)
+        self.rect = pygame.Surface.fill(self.bullet_surf, self.color)
         self.rect.center = self.pos
         self.rotate_sprite(angle)
     

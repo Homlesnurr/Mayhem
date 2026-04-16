@@ -153,11 +153,11 @@ class Spaceship(CorePhysics):
         self.velocity[1] += self.acceleration[1]
 
         #max velocity
-        if self.velocity[0] != max(-200, min(200, self.velocity[0])):
-            self.velocity[0] = max(-200, min(200, self.velocity[0]))
+        if self.velocity[0] != max(-250, min(250, self.velocity[0])):
+            self.velocity[0] = max(-250, min(250, self.velocity[0]))
             self.acceleration[0] == 0
-        if self.velocity[1] != max(-200, min(200, self.velocity[1])):
-            self.velocity[1] = max(-200, min(200, self.velocity[1]))
+        if self.velocity[1] != max(-250, min(250, self.velocity[1])):
+            self.velocity[1] = max(-250, min(250, self.velocity[1]))
             self.acceleration[1] == 0
 
 
@@ -200,7 +200,7 @@ class Bullet(CorePhysics):
         self.lifetime = 5
 
         #rectangle laser bullet
-        self.sprite = BulletSprite(self.velocity, self.angle)
+        self.sprite = BulletSprite(self.velocity, self.angle, owner.player_tag)
         self.image = self.sprite.image
         self.rect = self.sprite.rect
 
