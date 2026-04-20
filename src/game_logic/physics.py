@@ -2,7 +2,7 @@ from __future__ import annotations
 import pygame
 import numpy as np
 import config
-from src.ui import SpaceshipSprite, Map, BulletSprite, ObstacleSprite, FueldropSprite
+from src.ui import SpaceshipSprite, Map, BulletSprite, ObstacleSprite, FueldropSprite, StatSprite
 #temp const
 dt = 1/config.FPS
 starting_fuel = 100
@@ -20,10 +20,14 @@ class PhysicsEngine:
         self.solid = pygame.sprite.Group()
         self.spaceships = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
+        self.stats = pygame.sprite.Group()
         self.fuel_respawns = []
 
     def add_solid(self, solid: Map):
         self.solid.add(solid)
+
+    def add_stats(self, ship):
+        self.stats.add(ship)
 
     def add_spaceship(self, ship: Spaceship):
         self.spaceships.add(ship)
@@ -35,13 +39,17 @@ class PhysicsEngine:
         self.solid.draw(surface)
         self.spaceships.draw(surface)
         self.bullets.draw(surface)
+        self.stats.draw(surface)
     
     def update(self):
         # Bullets colliding with ships
         collisions = pygame.sprite.groupcollide(self.spaceships, self.bullets, False, False, pygame.sprite.collide_mask)
         for ship, bullets_hit in collisions.items():                                                               
             for bullet in bullets_hit:
-                if bullet.owner is not ship:
+                if bullet.owner.player_tag is not ship.player_tag:
+                    for stat in self.stats:
+                        if stat.ship.player_tag == bullet.owner.player_tag:
+                            stat.change_score(10)
                     ship.kill_self(self)
                     bullet.kill()
 
@@ -56,10 +64,13 @@ class PhysicsEngine:
                 solid = collided_solids[0]
                 #fueldrop collision
                 if solid.__class__.__name__ == 'Fueldrop':
-                    ship.fuel = 0.5 * starting_fuel
+                    ship.fuel = min(starting_fuel + 0.5 * starting_fuel, starting_fuel)
                     solid.destroy(self)
                     #self.solid.remove(pygame.sprite.spritecollide(ship, self.solid, False, pygame.sprite.collide_mask)[0])
                 else:
+                    for stat in self.stats:
+                        if stat.ship.player_tag == ship.player_tag:
+                            stat.change_score(-5)
                     ship.kill_self(self)
 
         # Bullets colliding with solid objects
@@ -78,6 +89,7 @@ class PhysicsEngine:
         self.solid.update()
         self.bullets.update()
         self.spaceships.update()
+        self.stats.update()
 
 class CorePhysics(pygame.sprite.Sprite):
     """
@@ -182,7 +194,11 @@ class Spaceship(CorePhysics):
         self.position[1] += self.velocity[1] * dt
 
     def kill_self(self, physics_engine: PhysicsEngine):
-        physics_engine.add_spaceship(Spaceship(self.player_tag))
+        newship = Spaceship(self.player_tag)
+        physics_engine.add_spaceship(newship)
+        for stat in physics_engine.stats:
+            if stat.ship.player_tag == newship.player_tag:
+                stat.ship = newship
         self.kill()
 
 
@@ -287,32 +303,19 @@ class Fueldrop(pygame.sprite.Sprite):
         self.rect = self.sprite.rect
     
 
-class Stats():
-    def __init__(self):
+class Stats(pygame.sprite.Sprite):
+
+    def __init__(self, spaceship: Spaceship):
         super().__init__()
+        self._score = 0
+        self.ship = spaceship
+        self.sprite = StatSprite(self.ship.fuel, self._score, self.ship.player_tag)
 
+        self.image = self.sprite.image
+        self.rect = self.sprite.rect
 
-    def change_score(self, player: str, score: int):
-        if player == 'Player 1': self._score1 += score
-        if player == 'Player 2': self._score2 += score
-
-    def fuel_guage(self, screen, spaceship: Spaceship):
-        width = 300
-        height = 50
-        if spaceship.player_tag == 'Player 1':
-            x, y = 0, 0
-        elif spaceship.player_tag == 'Player 2':
-            x, y = config.screen_dimensions[0]-width, 0
-        self.draw_bar(screen, x, y, width, height, spaceship.fuel, (0,255,0))
-
-    # draw bar for fuel taken from vincent Anuwat van Duin's second assignment in Objektorientert programmering
-    def draw_bar(screen, x, y, width, height, value, color):
-        # Background bar
-        pygame.draw.rect(screen, (60, 60, 60), (x, y, width, height), border_radius=5)
-        
-        # Filled part
-        fill_width = (value / 100) * width
-        pygame.draw.rect(screen, color, (x, y, fill_width, height), border_radius=5)
+    def change_score(self, score: int):
+        self._score += score
 
     def update(self):
-        pass
+        self.sprite.update(self.ship.fuel, self._score)

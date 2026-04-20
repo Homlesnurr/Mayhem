@@ -1,7 +1,12 @@
+from __future__ import annotations                                                                                                                                                                     
 import pygame
 import config
 from typing import Callable
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING   
+
+if TYPE_CHECKING:                                                                                                                                                                                      
+    from game_logic.physics import Spaceship    
 
 class SpriteBase(pygame.sprite.Sprite, ABC):
     '''
@@ -233,3 +238,43 @@ class Map(SpriteBase):
     def update(self):
         pass
 
+class StatSprite(SpriteBase):
+    def __init__(self, fuel, score, name):
+        super().__init__()
+        self.surf_width = config.screen_dimensions[0]
+        self.surf_height = config.screen_dimensions[1]
+        self.surf = pygame.Surface((self.surf_width, self.surf_height), pygame.SRCALPHA)
+        self.width = 300
+        self.height = 50
+        if name == 'Player 1':
+            self.x, self.y = 0, 0
+        elif name == 'Player 2':
+            self.x, self.y = config.screen_dimensions[0]-self.width, 0
+        fuel = fuel * self.width / 100
+        
+        # Fuel bar
+        pygame.draw.rect(self.surf, (67,67,67), (self.x, self.y, self.width, self.height))
+        pygame.draw.rect(self.surf, (0,255,0), (self.x, self.y, fuel, self.height))
+        
+        # Score
+        font = pygame.font.Font(None, int(self.surf_width//12))
+        self.text_surface = font.render(f'{score}', True, (255,255,255))
+        self.text_rect = self.text_surface.get_rect(center=(self.x + self.width // 2, self.y + 2*self.height))        
+        self.surf.blit(self.text_surface, self.text_rect)
+        
+        self.image = self.surf
+        self.rect = self.surf.get_rect()
+
+    def update(self, _fuel, _score):
+        fuel = _fuel * self.width / 100
+        self.surf.fill((0,0,0,0))
+        pygame.draw.rect(self.surf, (67,67,67), (int(self.x), int(self.y), self.width, self.height), int(fuel))
+        pygame.draw.rect(self.surf, (0,255,0), (int(self.x), int(self.y), fuel, self.height), int(fuel))
+        
+        # Score
+        font = pygame.font.Font(None, int(self.surf_width//12))
+        self.text_surface = font.render(f'{_score}', True, (255,255,255))
+        self.text_rect = self.text_surface.get_rect(center=(self.x + self.width // 2, self.y + 2*self.height))        
+        self.surf.blit(self.text_surface, self.text_rect)
+        self.image = self.surf
+        self.rect = self.surf.get_rect()

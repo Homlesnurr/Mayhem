@@ -2,7 +2,7 @@ import pygame
 import config
 from scenes import SceneBase
 from src.ui import RoundedButton, ImageLoader, Display, SpaceshipSprite, Map
-from src.game_logic import Spaceship, PhysicsEngine, Obstacle, Fueldrop
+from src.game_logic import Spaceship, PhysicsEngine, Obstacle, Fueldrop, Stats
 
 class GameScreen(SceneBase):
     '''
@@ -19,12 +19,16 @@ class GameScreen(SceneBase):
         self.fueldrop1 = Fueldrop(100, 550)
         self.fueldrop2 = Fueldrop(1100, 550)
         self.player1 = Spaceship('Player 1')
+        self.stat1 = Stats(self.player1)
         self.player2 = Spaceship('Player 2')
+        self.stat2 = Stats(self.player2)
         self.add(background)
         self.physics_engine.add_solid(self.map)
         self.physics_engine.add_solid(self.obstacle)
         self.physics_engine.add_solid(self.fueldrop1)
         self.physics_engine.add_solid(self.fueldrop2)
+        self.physics_engine.add_stats(self.stat1)
+        self.physics_engine.add_stats(self.stat2)
         self.physics_engine.add_spaceship(self.player1)
         self.physics_engine.add_spaceship(self.player2)
 
