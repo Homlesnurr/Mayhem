@@ -109,7 +109,7 @@ class ObstacleSprite(SpriteBase):
 class FueldropSprite(ObstacleSprite):
     def __init__(self, pos: list[int, int], angle: float):
         super().__init__(pos, angle)
-        self.ship_sprite = ImageLoader('assets\\barrel.png', scale=0.6)
+        self.ship_sprite = ImageLoader('assets\\barrel.png', scale=0.4)
         self.pos = pos
         self.image = self.ship_sprite.image
         self.image_base = self.image.copy()
