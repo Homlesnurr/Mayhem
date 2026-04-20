@@ -20,8 +20,7 @@ class PhysicsEngine:
         self.solid = pygame.sprite.Group()
         self.spaceships = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
-        self.fuel_respawn_time = None
-        self.fuelrespawn_pos = None
+        self.fuel_respawns = []
 
     def add_solid(self, solid: Map):
         self.solid.add(solid)
@@ -68,9 +67,13 @@ class PhysicsEngine:
             if pygame.sprite.spritecollide(bullet, self.solid, False, pygame.sprite.collide_mask):
                 bullet.kill()
         
-        if self.fuel_respawn_time is not None and pygame.time.get_ticks() >= self.fuel_respawn_time:
-            self.add_solid(Fueldrop(self.fuelrespawn_pos[0], self.fuelrespawn_pos[1]))
-            self.fuel_respawn_time = None
+        curr_time = pygame.time.get_ticks() 
+        
+        for respawn in self.fuel_respawns:
+            if curr_time >= respawn['respawn_time']:
+                self.add_solid(Fueldrop(respawn['position'][0], respawn['position'][1]))
+                self.fuel_respawns.remove(respawn)
+                
 
         self.solid.update()
         self.bullets.update()
@@ -271,9 +274,12 @@ class Fueldrop(pygame.sprite.Sprite):
     def destroy(self, physics_engine: PhysicsEngine):
         physics_engine.solid.remove(self)
         self.kill()
-        physics_engine.fuel_respawn_time = pygame.time.get_ticks() + barrel_respawn_time # 5 seconds respawn time
-        physics_engine.fuelrespawn_pos = self.position.copy()
+        physics_engine.fuel_respawns.append({
+            'position': self.position.copy(),
+            'respawn_time': pygame.time.get_ticks() + barrel_respawn_time
+        })
 
+        
     def update(self):
         self.rotation()
         self.sprite.update(self.position, self.angle)
