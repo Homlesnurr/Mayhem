@@ -9,6 +9,7 @@ starting_fuel = 100
 rotation_speed = 2
 consume_fuel_rate = 10
 bullet_speed = 500
+barrel_respawn_time = 5000
 
 
 class PhysicsEngine:
@@ -19,6 +20,8 @@ class PhysicsEngine:
         self.solid = pygame.sprite.Group()
         self.spaceships = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
+        self.fuel_respawn_time = None
+        self.fuelrespawn_pos = None
 
     def add_solid(self, solid: Map):
         self.solid.add(solid)
@@ -49,14 +52,26 @@ class PhysicsEngine:
                 
         # Ships colliding with solid objects
         for ship in self.spaceships:
-            if pygame.sprite.spritecollide(ship, self.solid, False, pygame.sprite.collide_mask):
-                ship.kill_self(self)
+            collided_solids = pygame.sprite.spritecollide(ship, self.solid, False, pygame.sprite.collide_mask)
+            if collided_solids:
+                solid = collided_solids[0]
+                #fueldrop collision
+                if solid.__class__.__name__ == 'Fueldrop':
+                    ship.fuel = 0.5 * starting_fuel
+                    solid.destroy(self)
+                    #self.solid.remove(pygame.sprite.spritecollide(ship, self.solid, False, pygame.sprite.collide_mask)[0])
+                else:
+                    ship.kill_self(self)
 
         # Bullets colliding with solid objects
         for bullet in self.bullets:
             if pygame.sprite.spritecollide(bullet, self.solid, False, pygame.sprite.collide_mask):
                 bullet.kill()
         
+        if self.fuel_respawn_time is not None and pygame.time.get_ticks() >= self.fuel_respawn_time:
+            self.add_solid(Fueldrop(self.fuelrespawn_pos[0], self.fuelrespawn_pos[1]))
+            self.fuel_respawn_time = None
+
         self.solid.update()
         self.bullets.update()
         self.spaceships.update()
@@ -252,6 +267,12 @@ class Fueldrop(pygame.sprite.Sprite):
     
     def rotation(self):
         self.angle = (self.angle + rotation_speed/8) % 360
+    
+    def destroy(self, physics_engine: PhysicsEngine):
+        physics_engine.solid.remove(self)
+        self.kill()
+        physics_engine.fuel_respawn_time = pygame.time.get_ticks() + barrel_respawn_time # 5 seconds respawn time
+        physics_engine.fuelrespawn_pos = self.position.copy()
 
     def update(self):
         self.rotation()
