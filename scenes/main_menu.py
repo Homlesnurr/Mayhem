@@ -19,16 +19,8 @@ class MainMenu(SceneBase):
                                        (50,50,200),
                                        'Play',
                                        display.open_game)
-        settings_button= RoundedButton(self.screen_center_x,
-                                       self.screen_center_y + self.button_height - self.screen_center_y*0.3,
-                                       self.button_width,
-                                       self.button_height,
-                                       (50,50,200),
-                                       'Settings',
-                                       display.open_settings)
         self.add(background)
         self.add(play_button)
-        #self.add(settings_button)
 
     def add(self, element):
         self.all_sprites.add(element)
