@@ -39,44 +39,12 @@ class PhysicsEngine:
         self._bullets.draw(surface)
     
     def update(self):
+        collision_handler = CollisionHandler(self)
         for ship in self._spaceships:
-            # Check for ship collisions
-            collided_ships = pygame.sprite.spritecollide(ship, [s for s in self._spaceships if s is not ship], False, pygame.sprite.collide_mask)
-            if collided_ships:
-                for c_ship in [*collided_ships, ship]:
-                    for player in self._players:
-                        if c_ship._owner == player._name:
-                            player.kill_ship(self)
-            
-            # Check for bullets colliding with ships
-            hits = pygame.sprite.spritecollide(ship, [b for b in self._bullets if b._owner != ship._owner], False, pygame.sprite.collide_mask)
-            if hits:
-                for hit in hits:
-                    if isinstance(hit, Bullet):
-                        for player in self._players:
-                            if ship._owner == player._name:
-                                player.kill_ship(self)
-                            if hit._owner == player._name:
-                                player.give_points(10)
-                        hit.kill()
-                    else:
-                        for player in self._players:
-                            if hit._owner == player._name:
-                                player.kill_ship(self)
-            
-            collided_solids = pygame.sprite.spritecollide(ship, self._solids, False, pygame.sprite.collide_mask)
-            if collided_solids:
-                for collision in collided_solids:
-                    if isinstance(collision, Fueldrop):
-                        ship._fuel = min(PhysicsConfig.starting_fuel + 0.5 * PhysicsConfig.starting_fuel, PhysicsConfig.starting_fuel)
-                        collision.destroy(self)
-                    else:
-                        for player in self._players:
-                            if ship._owner == player._name:
-                                player.kill_ship(self)
-
-        # Bullets colliding with solid objects
-        pygame.sprite.groupcollide(self._bullets, self._solids, True, False, pygame.sprite.collide_mask)
+            collision_handler.check_ship_collisions(ship)
+            collision_handler.check_bullet_collisions(ship)
+            collision_handler.check_solid_collisions(ship)
+        collision_handler.check_bullet_solid_collisions()
         
         curr_time = pygame.time.get_ticks() 
         
@@ -90,6 +58,52 @@ class PhysicsEngine:
         self._bullets.update()
         self._players.update()
         self._spaceships.update()
+
+class CollisionHandler:
+    """
+    Class for handling collisions between different objects. Uses pygames collision functions to check for collisions.
+    """
+    def __init__(self, physics_engine: PhysicsEngine):
+        self.physics_engine = physics_engine
+    
+    def check_ship_collisions(self, ship: Spaceship):
+            # Check for ship collisions
+            collided_ships = pygame.sprite.spritecollide(ship, [s for s in self.physics_engine._spaceships if s is not ship], False, pygame.sprite.collide_mask)
+            if collided_ships:
+                for c_ship in [*collided_ships, ship]:
+                    for player in self.physics_engine._players:
+                        if c_ship._owner == player._name:
+                            player.kill_ship(self.physics_engine)
+    
+    def check_bullet_collisions(self, ship: Spaceship):
+        hits = pygame.sprite.spritecollide(ship, [b for b in self.physics_engine._bullets if b._owner != ship._owner], False, pygame.sprite.collide_mask)
+        if hits:
+            for hit in hits:
+                if isinstance(hit, Bullet):
+                    for player in self.physics_engine._players:
+                        if ship._owner == player._name:
+                            player.kill_ship(self.physics_engine)
+                        if hit._owner == player._name:
+                            player.give_points(10)
+                    hit.kill()
+                else:
+                    for player in self.physics_engine._players:
+                        if hit._owner == player._name:
+                            player.kill_ship(self.physics_engine)
+    def check_solid_collisions(self, ship: Spaceship):
+        collided_solids = pygame.sprite.spritecollide(ship, self.physics_engine._solids, False, pygame.sprite.collide_mask)
+        if collided_solids:
+            for collision in collided_solids:
+                if isinstance(collision, Fueldrop):
+                    ship._fuel = min(PhysicsConfig.starting_fuel + 0.5 * PhysicsConfig.starting_fuel, PhysicsConfig.starting_fuel)
+                    collision.destroy(self.physics_engine)
+                else:
+                    for player in self.physics_engine._players:
+                        if ship._owner == player._name:
+                            player.kill_ship(self.physics_engine)
+    def check_bullet_solid_collisions(self):
+        pygame.sprite.groupcollide(self.physics_engine._bullets, self.physics_engine._solids, True, False, pygame.sprite.collide_mask)
+    
 
 class CorePhysics(pygame.sprite.Sprite):
     """
