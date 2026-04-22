@@ -16,7 +16,8 @@ class PhysicsEngine:
         self._stats = pygame.sprite.Group()
         self._spaceships = pygame.sprite.Group()
         self._bullets = pygame.sprite.Group()
-        self._fuel_respawns = []
+        self.respawn_overseer = FuelRespawnOverseer()
+        self.collision_handler = CollisionHandler(self)
 
     def add_solid(self, solid):
         self._solids.add(solid)
@@ -39,21 +40,12 @@ class PhysicsEngine:
         self._bullets.draw(surface)
     
     def update(self):
-        collision_handler = CollisionHandler(self)
         for ship in self._spaceships:
-            collision_handler.check_ship_collisions(ship)
-            collision_handler.check_bullet_collisions(ship)
-            collision_handler.check_solid_collisions(ship)
-        collision_handler.check_bullet_solid_collisions()
-        
-        curr_time = pygame.time.get_ticks() 
-        
-        for respawn in self._fuel_respawns:
-            if curr_time >= respawn['respawn_time']:
-                self.add_solid(Fueldrop(respawn['position'][0], respawn['position'][1]))
-                self._fuel_respawns.remove(respawn)
-                
-
+            self.collision_handler.check_ship_collisions(ship)
+            self.collision_handler.check_bullet_collisions(ship)
+            self.collision_handler.check_solid_collisions(ship)
+        self.collision_handler.check_bullet_solid_collisions()
+        self.respawn_overseer.update(self)             
         self._solids.update()
         self._bullets.update()
         self._players.update()
@@ -96,13 +88,35 @@ class CollisionHandler:
             for collision in collided_solids:
                 if isinstance(collision, Fueldrop):
                     ship._fuel = min(PhysicsConfig.starting_fuel + 0.5 * PhysicsConfig.starting_fuel, PhysicsConfig.starting_fuel)
-                    collision.destroy(self.physics_engine)
+                    collision.destroy(self.physics_engine.respawn_overseer)
                 else:
                     for player in self.physics_engine._players:
                         if ship._owner == player._name:
                             player.kill_ship(self.physics_engine)
     def check_bullet_solid_collisions(self):
         pygame.sprite.groupcollide(self.physics_engine._bullets, self.physics_engine._solids, True, False, pygame.sprite.collide_mask)
+    
+
+class FuelRespawnOverseer:
+    """
+    class for handling fuel respawns. when a fueldrop is destroyed, it gets added to the respawn list with a respawn time. This class checks the list and respawns the fueldrop when the time is right.
+    """
+    def __init__(self):
+        self._fuel_respawns = []
+    
+    def push_respawn(self, position: tuple[int,int]):
+        self._fuel_respawns.append({
+            'position': position,
+            'respawn_time': pygame.time.get_ticks() + PhysicsConfig.barrel_respawn_time
+        })
+
+    def update(self, physics_engine: PhysicsEngine):
+        curr_time = pygame.time.get_ticks() 
+        for respawn in self._fuel_respawns[:]:
+            if curr_time >= respawn['respawn_time']:
+                physics_engine.add_solid(Fueldrop(respawn['position'][0], respawn['position'][1]))
+                self._fuel_respawns.remove(respawn)
+
     
 
 class CorePhysics(pygame.sprite.Sprite):
@@ -289,15 +303,10 @@ class Fueldrop(pygame.sprite.Sprite):
     def rotation(self):
         self.angle = (self.angle + PhysicsConfig.rotation_speed/8) % 360
     
-    def destroy(self, physics_engine: PhysicsEngine):
-        physics_engine._solids.remove(self)
+    def destroy(self, fuel_respawn_overseer: FuelRespawnOverseer):
         self.kill()
-        physics_engine._fuel_respawns.append({
-            'position': self.position.copy(),
-            'respawn_time': pygame.time.get_ticks() + PhysicsConfig.barrel_respawn_time
-        })
+        fuel_respawn_overseer.push_respawn(self.position.copy())
 
-        
     def update(self):
         self.rotation()
         self.sprite.update(self.position, self.angle)
