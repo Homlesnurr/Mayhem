@@ -31,7 +31,7 @@ class SettingsMenu(SceneBase):
         self.add(change_res_1600_920)
 
     def add(self, element):
-        self.objects.add(element)
+        self.all_sprites.add(element)
 
     def remove(self, element):
-        self.objects.remove(element)
+        self.all_sprites.remove(element)

@@ -28,10 +28,10 @@ class MainMenu(SceneBase):
                                        display.open_settings)
         self.add(background)
         self.add(play_button)
-        self.add(settings_button)
+        #self.add(settings_button)
 
     def add(self, element):
-        self.objects.add(element)
+        self.all_sprites.add(element)
 
     def remove(self, element):
-        self.objects.remove(element)
+        self.all_sprites.remove(element)

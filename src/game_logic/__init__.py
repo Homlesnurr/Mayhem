@@ -1,4 +1,4 @@
-from .physics import Spaceship, PhysicsEngine,Obstacle,Fueldrop, Bullet, Stats
+from .physics import Spaceship, PhysicsEngine,Obstacle,Fueldrop, Bullet, Player
 
 __all__ = [
     Spaceship,
@@ -6,5 +6,5 @@ __all__ = [
     Obstacle,
     Bullet,
     Fueldrop,
-    Stats
+    Player
 ]

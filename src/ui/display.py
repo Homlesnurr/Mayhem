@@ -13,7 +13,7 @@ class Display:
         import scenes
         self.screen = pygame.display.set_mode(config.screen_dimensions)
         self.main_menu      = scenes.MainMenu(self)
-        self.game_screen    = scenes.GameScreen(self)
+        self.game_screen    = scenes.GameScreen()
         self.settings       = scenes.SettingsMenu(self)
 
         self.set_scene(self.main_menu)
@@ -48,11 +48,11 @@ class Display:
         '''
         import scenes
         if isinstance(self.active_scene, scenes.GameScreen):
-            self.active_scene.objects.update()
+            self.active_scene.all_sprites.update()
             self.active_scene.physics_engine.update()
-            self.active_scene.objects.draw(self.screen)
+            self.active_scene.all_sprites.draw(self.screen)
             self.active_scene.physics_engine.draw(self.screen)
         else:
-            self.active_scene.objects.update()
-            self.active_scene.objects.draw(self.screen)
+            self.active_scene.all_sprites.update()
+            self.active_scene.all_sprites.draw(self.screen)
         pygame.display.flip()

@@ -2,7 +2,7 @@ from __future__ import annotations
 import pygame
 import numpy as np
 import config
-from src.ui import SpaceshipSprite, Map, BulletSprite, ObstacleSprite, FueldropSprite, StatSprite
+from src.ui import SpaceshipSprite, BulletSprite, ObstacleSprite, FueldropSprite, StatSprite
 #temp const
 dt = 1/config.FPS
 starting_fuel = 100
@@ -17,98 +17,129 @@ class PhysicsEngine:
     Container for every element where physics are required.
     '''
     def __init__(self):
-        self.solid = pygame.sprite.Group()
-        self.spaceships = pygame.sprite.Group()
-        self.bullets = pygame.sprite.Group()
-        self.stats = pygame.sprite.Group()
-        self.fuel_respawns = []
+        self._solids = pygame.sprite.Group()
+        self._players = pygame.sprite.Group()
+        self._stats = pygame.sprite.Group()
+        self._spaceships = pygame.sprite.Group()
+        self._bullets = pygame.sprite.Group()
+        self._fuel_respawns = []
 
-    def add_solid(self, solid: Map):
-        self.solid.add(solid)
+    def add_solid(self, solid):
+        self._solids.add(solid)
 
-    def add_stats(self, ship):
-        self.stats.add(ship)
+    def add_player(self, player: Player):
+        self._players.add(player)
+        self._stats.add(player.stats)
+        self.add_spaceship(player.ship)
 
     def add_spaceship(self, ship: Spaceship):
-        self.spaceships.add(ship)
+        self._spaceships.add(ship)
 
     def add_bullet(self, bullet: Bullet):
-        self.bullets.add(bullet)
+        self._bullets.add(bullet)
     
     def draw(self, surface):
-        self.solid.draw(surface)
-        self.spaceships.draw(surface)
-        self.bullets.draw(surface)
-        self.stats.draw(surface)
+        self._solids.draw(surface)
+        self._spaceships.draw(surface)
+        self._stats.draw(surface)
+        self._bullets.draw(surface)
     
     def update(self):
-        # Bullets colliding with ships
-        collisions = pygame.sprite.groupcollide(self.spaceships, self.bullets, False, False, pygame.sprite.collide_mask)
-        for ship, bullets_hit in collisions.items():                                                               
-            for bullet in bullets_hit:
-                if bullet.owner.player_tag is not ship.player_tag:
-                    for stat in self.stats:
-                        if stat.ship.player_tag == bullet.owner.player_tag:
-                            stat.change_score(10)
-                    ship.kill_self(self)
-                    bullet.kill()
-
-        # Ships colliding with ships ( ONLY WORKS WHEN THERE ARE 2 SHIPS )
-        if len(pygame.sprite.spritecollide(list(self.spaceships)[0], self.spaceships, False, pygame.sprite.collide_mask)) > 1:
-            [ship.kill_self(self) for ship in self.spaceships]
-                
-        # Ships colliding with solid objects
-        for ship in self.spaceships:
-            collided_solids = pygame.sprite.spritecollide(ship, self.solid, False, pygame.sprite.collide_mask)
+        for ship in self._spaceships:
+            # Check for ship collisions
+            collided_ships = pygame.sprite.spritecollide(ship, [s for s in self._spaceships if s is not ship], False, pygame.sprite.collide_mask)
+            if collided_ships:
+                for c_ship in [*collided_ships, ship]:
+                    for player in self._players:
+                        if c_ship._owner == player._name:
+                            player.kill_ship(self)
+            
+            # Check for bullets colliding with ships
+            hits = pygame.sprite.spritecollide(ship, [b for b in self._bullets if b._owner != ship._owner], False, pygame.sprite.collide_mask)
+            if hits:
+                for hit in hits:
+                    if isinstance(hit, Bullet):
+                        for player in self._players:
+                            if ship._owner == player._name:
+                                player.kill_ship(self)
+                            if hit._owner == player._name:
+                                player.give_points(10)
+                        hit.kill()
+                    else:
+                        for player in self._players:
+                            if hit._owner == player._name:
+                                player.kill_ship(self)
+            
+            collided_solids = pygame.sprite.spritecollide(ship, self._solids, False, pygame.sprite.collide_mask)
             if collided_solids:
-                solid = collided_solids[0]
-                #fueldrop collision
-                if solid.__class__.__name__ == 'Fueldrop':
-                    ship.fuel = min(starting_fuel + 0.5 * starting_fuel, starting_fuel)
-                    solid.destroy(self)
-                    #self.solid.remove(pygame.sprite.spritecollide(ship, self.solid, False, pygame.sprite.collide_mask)[0])
-                else:
-                    for stat in self.stats:
-                        if stat.ship.player_tag == ship.player_tag:
-                            stat.change_score(-5)
-                    ship.kill_self(self)
+                for collision in collided_solids:
+                    if isinstance(collision, Fueldrop):
+                        ship._fuel = min(starting_fuel + 0.5 * starting_fuel, starting_fuel)
+                        collision.destroy(self)
+                    else:
+                        for player in self._players:
+                            if ship._owner == player._name:
+                                player.kill_ship(self)
 
         # Bullets colliding with solid objects
-        for bullet in self.bullets:
-            if pygame.sprite.spritecollide(bullet, self.solid, False, pygame.sprite.collide_mask):
-                bullet.kill()
+        pygame.sprite.groupcollide(self._bullets, self._solids, True, False, pygame.sprite.collide_mask)
         
         curr_time = pygame.time.get_ticks() 
         
-        for respawn in self.fuel_respawns:
+        for respawn in self._fuel_respawns:
             if curr_time >= respawn['respawn_time']:
                 self.add_solid(Fueldrop(respawn['position'][0], respawn['position'][1]))
-                self.fuel_respawns.remove(respawn)
+                self._fuel_respawns.remove(respawn)
                 
 
-        self.solid.update()
-        self.bullets.update()
-        self.spaceships.update()
-        self.stats.update()
+        self._solids.update()
+        self._bullets.update()
+        self._players.update()
+        self._spaceships.update()
 
 class CorePhysics(pygame.sprite.Sprite):
     """
     Base class for physics based objects: Velocity, acceleration and position updates. All objects that move inherits this.
     """
-    def __init__(self, x, y):
+    def __init__(self,
+                 pos: pygame.Vector2= None,
+                 vel: pygame.Vector2= None,
+                 acc: pygame.Vector2= None,
+                 angle: float=0):
         super().__init__()
-        self.position = [x, y]
-        self.velocity = [0.0, 0.0]
-        self.acceleration = [0.0, 0.0] 
-        self.angle = 0.0
-
-    def reset_accel(self):
-        self.acceleration[1] = 3 # Gravity
-        self.acceleration[0] = 0
+        self.position = pos if pos is not None else pygame.Vector2(0, 0)
+        self.velocity = vel if vel is not None else pygame.Vector2(0, 0)
+        self.acceleration = acc if acc is not None else pygame.Vector2(0, 0)
+        self.angle = angle
         
     def update(self):
         pass
 
+class Player(pygame.sprite.Sprite):
+    def __init__(self, player_tag: str):
+        super().__init__()
+        self._name = player_tag
+        self._score = 0
+        self.stats = StatSprite(self)
+        self.make_ship()
+    
+    def make_ship(self):
+        self.ship = Spaceship(self._name)
+    
+    def take_points(self, points: int=5):
+        self._score -= points
+
+    def give_points(self, points: int=10):
+        self._score += points
+
+    def kill_ship(self, physics_engine: PhysicsEngine):
+        self.take_points(5)
+        self.ship.kill()
+        self.make_ship()
+        physics_engine.add_spaceship(self.ship)
+    
+    def update(self):
+        self.stats.update(self.ship._fuel, self._score)
 
 class Spaceship(CorePhysics):
     '''
@@ -118,12 +149,14 @@ class Spaceship(CorePhysics):
         if player_tag == 'Player 1':
             x = 100
             y = 100
-        else:
+        elif player_tag == 'Player 2':
             x = config.screen_dimensions[0] - 100
             y = 100
-        super().__init__(x, y)
-        self.player_tag = player_tag
-        self.fuel = starting_fuel
+        else:
+            raise LookupError(f'Player: {player_tag}, not valid player tag')
+        super().__init__(pygame.Vector2(x,y))
+        self._owner = player_tag
+        self._fuel = starting_fuel
         self.shoot_cd = 0
         self.thrusting = False
         self.rotate_left = False
@@ -137,70 +170,42 @@ class Spaceship(CorePhysics):
         
     def rotate(self, dir: str):
         if dir == 'l' or dir =='left':
-            self.rotate_left = True
+            self.angle = (self.angle + rotation_speed)
         elif dir == 'r' or dir == 'right':
-            self.rotate_right = True
+            self.angle = (self.angle - rotation_speed)
 
     def fire_bullet(self, physics_engine: PhysicsEngine):
         if self.shoot_cd > 0:
             return
         self.shoot_cd = 0.3
-        bullet_vel_x = -bullet_speed * np.sin(np.deg2rad(self.angle))
-        bullet_vel_y = -bullet_speed * np.cos(np.deg2rad(self.angle))
-        bullet_velocity = [bullet_vel_x, bullet_vel_y]
-        self.bullet = Bullet(self.position[0],
-                        self.position[1],
-                        bullet_velocity,
-                        self.angle,
-                        self)
+        bullet_vel = - bullet_speed * pygame.Vector2(np.sin(np.deg2rad(self.angle)), np.cos(np.deg2rad(self.angle)))
+        self.bullet = Bullet(self.position, bullet_vel, self.angle, self._owner)
         physics_engine.add_bullet(self.bullet)
                         
     
     def apply_physics(self):
-        self.reset_accel()
-        # rotation
-        if self.rotate_left and self.rotate_right:
-            pass
-        elif self.rotate_left:
-            self.angle = (self.angle + rotation_speed)
-        elif self.rotate_right:
-            self.angle = (self.angle - rotation_speed)
+        # Gravity
+        self.acceleration = pygame.Vector2(0, 200) # Gravity
         
-
         # thrust
-        if self.fuel <= 0:
-            self.fuel = 0
+        if self._fuel <= 0:
+            self._fuel = 0
             self.thrusting = False
         elif self.thrusting:
-            self.acceleration[0] += -12 * np.sin(np.deg2rad(self.angle))
-            self.acceleration[1] += -12 * np.cos(np.deg2rad(self.angle))
-            self.fuel -= consume_fuel_rate * dt
+            self.acceleration -= 500 * pygame.Vector2(np.sin(np.deg2rad(self.angle)), np.cos(np.deg2rad(self.angle)))
+            self._fuel -= consume_fuel_rate * dt
 
         # update velocity
-        self.velocity[0] += self.acceleration[0]
-        self.velocity[1] += self.acceleration[1]
+        self.velocity += self.acceleration * dt
 
         #max velocity
-        if self.velocity[0] != max(-250, min(250, self.velocity[0])):
-            self.velocity[0] = max(-250, min(250, self.velocity[0]))
-            self.acceleration[0] == 0
-        if self.velocity[1] != max(-250, min(250, self.velocity[1])):
-            self.velocity[1] = max(-250, min(250, self.velocity[1]))
-            self.acceleration[1] == 0
+        if self.velocity.magnitude() > 400:
+            self.velocity = self.velocity.normalize() * 400
+        self.velocity = self.velocity * 0.99
 
 
         # update position
-        self.position[0] += self.velocity[0] * dt
-        self.position[1] += self.velocity[1] * dt
-
-    def kill_self(self, physics_engine: PhysicsEngine):
-        newship = Spaceship(self.player_tag)
-        physics_engine.add_spaceship(newship)
-        for stat in physics_engine.stats:
-            if stat.ship.player_tag == newship.player_tag:
-                stat.ship = newship
-        self.kill()
-
+        self.position += self.velocity * dt
 
     def update(self):
 
@@ -211,33 +216,21 @@ class Spaceship(CorePhysics):
         self.thrusting = False
         self.rotate_left = False
         self.rotate_right = False
-
-    def __repr__(self):
-        return (
-            f'Spaceship:\t{self.player_tag}\n'
-            f'Fuel:\t\t{self.fuel}\n'
-            f'Position:\t{self.position}\n'
-            f'Velocity:\t{self.velocity}\n'
-            f'Acceleration:\t{self.acceleration}\n'
-            f'Angle:\t\t{self.angle}\n'
-            f'Thrusting:\t{self.thrusting}\n'
-            f'Rotate L/R:\t{int(self.rotate_left)}/{int(self.rotate_right)}'
-        )
     
 class Bullet(CorePhysics):
     '''
     Bullet class, creates a bullet belonging to one player. Collisions will only apply to spaceships other than the one shooting.
     '''
-    def __init__(self, x, y, v, angle, owner: Spaceship):
-        super().__init__(x, y) #position from spaceship, velocity from spaceship angle and bullet speed cons
-        self.position = np.array([x, y])
-        self.velocity = np.array(v)
+    def __init__(self, pos: pygame.Vector2, vel: pygame.Vector2, angle: float, owner: str):
+        super().__init__() #position from spaceship, velocity from spaceship angle and bullet speed cons
+        self._owner = owner
+        self.position = pos.copy()
+        self.velocity = vel.copy()
         self.angle = angle
-        self.owner = owner
         self.lifetime = 5
 
         #rectangle laser bullet
-        self.sprite = BulletSprite(self.velocity, self.angle, owner.player_tag)
+        self.sprite = BulletSprite(self.position, self.angle, self._owner)
         self.image = self.sprite.image
         self.rect = self.sprite.rect
 
@@ -245,10 +238,11 @@ class Bullet(CorePhysics):
         if self.lifetime <= 0:
             self.kill()
         self.lifetime -= dt
-        self.position = self.position + self.velocity * dt
-        self.sprite.update(self.position, self.angle)
+        self.position += self.velocity * dt
+        self.sprite.update(self.position)
         self.image = self.sprite.image
         self.rect = self.sprite.rect
+
 
 
 class Obstacle(pygame.sprite.Sprite):
@@ -288,9 +282,9 @@ class Fueldrop(pygame.sprite.Sprite):
         self.angle = (self.angle + rotation_speed/8) % 360
     
     def destroy(self, physics_engine: PhysicsEngine):
-        physics_engine.solid.remove(self)
+        physics_engine._solids.remove(self)
         self.kill()
-        physics_engine.fuel_respawns.append({
+        physics_engine._fuel_respawns.append({
             'position': self.position.copy(),
             'respawn_time': pygame.time.get_ticks() + barrel_respawn_time
         })
@@ -301,21 +295,3 @@ class Fueldrop(pygame.sprite.Sprite):
         self.sprite.update(self.position, self.angle)
         self.image = self.sprite.image
         self.rect = self.sprite.rect
-    
-
-class Stats(pygame.sprite.Sprite):
-
-    def __init__(self, spaceship: Spaceship):
-        super().__init__()
-        self._score = 0
-        self.ship = spaceship
-        self.sprite = StatSprite(self.ship.fuel, self._score, self.ship.player_tag)
-
-        self.image = self.sprite.image
-        self.rect = self.sprite.rect
-
-    def change_score(self, score: int):
-        self._score += score
-
-    def update(self):
-        self.sprite.update(self.ship.fuel, self._score)

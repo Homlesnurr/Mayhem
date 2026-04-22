@@ -11,19 +11,17 @@ class InputHandler:
         self.running = True
 
     def player_input(self,  pressed: pygame.key.ScancodeWrapper, clicked: int = None):
-        ships = self.display.active_scene.physics_engine.spaceships
-        for ship in ships:
-            if ship.player_tag == 'Player 1':
-                if pressed[pygame.K_w]     or clicked == pygame.K_w:       ship.thrust()
-                if pressed[pygame.K_a]     or clicked == pygame.K_a:       ship.rotate('left')
-                if pressed[pygame.K_d]     or clicked == pygame.K_d:       ship.rotate('right')
-                if pressed[pygame.K_s]     or clicked == pygame.K_s:       ship.fire_bullet(self.display.active_scene.physics_engine)
+        players = self.display.active_scene.players
 
-            if ship.player_tag == 'Player 2':
-                if pressed[pygame.K_UP]    or clicked == pygame.K_UP:      ship.thrust()
-                if pressed[pygame.K_LEFT]  or clicked == pygame.K_LEFT:    ship.rotate('left')
-                if pressed[pygame.K_RIGHT] or clicked == pygame.K_RIGHT:   ship.rotate('right')
-                if pressed[pygame.K_DOWN]  or clicked == pygame.K_DOWN:    ship.fire_bullet(self.display.active_scene.physics_engine)
+        if pressed[pygame.K_w]     or clicked == pygame.K_w:       players['player_1'].ship.thrust()
+        if pressed[pygame.K_a]     or clicked == pygame.K_a:       players['player_1'].ship.rotate('left')
+        if pressed[pygame.K_d]     or clicked == pygame.K_d:       players['player_1'].ship.rotate('right')
+        if pressed[pygame.K_s]     or clicked == pygame.K_s:       players['player_1'].ship.fire_bullet(self.display.active_scene.physics_engine)
+
+        if pressed[pygame.K_UP]    or clicked == pygame.K_UP:      players['player_2'].ship.thrust()
+        if pressed[pygame.K_LEFT]  or clicked == pygame.K_LEFT:    players['player_2'].ship.rotate('left')
+        if pressed[pygame.K_RIGHT] or clicked == pygame.K_RIGHT:   players['player_2'].ship.rotate('right')
+        if pressed[pygame.K_DOWN]  or clicked == pygame.K_DOWN:    players['player_2'].ship.fire_bullet(self.display.active_scene.physics_engine)
 
 
     def handle_events(self):
@@ -32,7 +30,7 @@ class InputHandler:
         pressed_keys = pygame.key.get_pressed()
         if isinstance(self.display.active_scene, GameScreen):
             self.player_input(pressed_keys)
-        hovered_sprites = pygame.sprite.spritecollide(mouse_sprite, self.display.active_scene.objects, False)
+        hovered_sprites = pygame.sprite.spritecollide(mouse_sprite, self.display.active_scene.all_sprites, False)
         for sprite in hovered_sprites:
             if hasattr(sprite, 'hoverable'): sprite.hover()
         for event in pygame.event.get():
