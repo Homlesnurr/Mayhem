@@ -3,13 +3,7 @@ import pygame
 import numpy as np
 import config
 from src.ui import SpaceshipSprite, BulletSprite, ObstacleSprite, FueldropSprite, StatSprite
-#temp const
-dt = 1/config.FPS
-starting_fuel = 100
-rotation_speed = 2
-consume_fuel_rate = 10
-bullet_speed = 500
-barrel_respawn_time = 5000
+from config import PhysicsConfig
 
 
 class PhysicsEngine:
@@ -74,7 +68,7 @@ class PhysicsEngine:
             if collided_solids:
                 for collision in collided_solids:
                     if isinstance(collision, Fueldrop):
-                        ship._fuel = min(starting_fuel + 0.5 * starting_fuel, starting_fuel)
+                        ship._fuel = min(PhysicsConfig.starting_fuel + 0.5 * PhysicsConfig.starting_fuel, PhysicsConfig.starting_fuel)
                         collision.destroy(self)
                     else:
                         for player in self._players:
@@ -156,7 +150,7 @@ class Spaceship(CorePhysics):
             raise LookupError(f'Player: {player_tag}, not valid player tag')
         super().__init__(pygame.Vector2(x,y))
         self._owner = player_tag
-        self._fuel = starting_fuel
+        self._fuel = PhysicsConfig.starting_fuel
         self.shoot_cd = 0
         self.thrusting = False
         self.rotate_left = False
@@ -170,15 +164,15 @@ class Spaceship(CorePhysics):
         
     def rotate(self, dir: str):
         if dir == 'l' or dir =='left':
-            self.angle = (self.angle + rotation_speed)
+            self.angle = (self.angle + PhysicsConfig.rotation_speed)
         elif dir == 'r' or dir == 'right':
-            self.angle = (self.angle - rotation_speed)
+            self.angle = (self.angle - PhysicsConfig.rotation_speed)
 
     def fire_bullet(self, physics_engine: PhysicsEngine):
         if self.shoot_cd > 0:
             return
-        self.shoot_cd = 0.3
-        bullet_vel = - bullet_speed * pygame.Vector2(np.sin(np.deg2rad(self.angle)), np.cos(np.deg2rad(self.angle)))
+        self.shoot_cd = PhysicsConfig.shoot_cooldown
+        bullet_vel = - PhysicsConfig.bullet_speed * pygame.Vector2(np.sin(np.deg2rad(self.angle)), np.cos(np.deg2rad(self.angle)))
         self.bullet = Bullet(self.position, bullet_vel, self.angle, self._owner)
         physics_engine.add_bullet(self.bullet)
                         
@@ -192,27 +186,27 @@ class Spaceship(CorePhysics):
             self._fuel = 0
             self.thrusting = False
         elif self.thrusting:
-            self.acceleration -= 500 * pygame.Vector2(np.sin(np.deg2rad(self.angle)), np.cos(np.deg2rad(self.angle)))
-            self._fuel -= consume_fuel_rate * dt
+            self.acceleration -= PhysicsConfig.thrust_power * pygame.Vector2(np.sin(np.deg2rad(self.angle)), np.cos(np.deg2rad(self.angle)))
+            self._fuel -= PhysicsConfig.consume_fuel_rate * PhysicsConfig.dt
 
         # update velocity
-        self.velocity += self.acceleration * dt
+        self.velocity += self.acceleration * PhysicsConfig.dt
 
         #max velocity
-        if self.velocity.magnitude() > 400:
-            self.velocity = self.velocity.normalize() * 400
-        self.velocity = self.velocity * 0.99
+        if self.velocity.magnitude() > PhysicsConfig.max_velocity:
+            self.velocity = self.velocity.normalize() * PhysicsConfig.max_velocity
+        self.velocity = self.velocity * PhysicsConfig.velocity_damping
 
 
         # update position
-        self.position += self.velocity * dt
+        self.position += self.velocity * PhysicsConfig.dt
 
     def update(self):
 
         # update Spaceship
         self.apply_physics()
         self.image, self.rect = self.sprite.update(self.position, self.angle)
-        self.shoot_cd -= dt
+        self.shoot_cd -= PhysicsConfig.dt
         self.thrusting = False
         self.rotate_left = False
         self.rotate_right = False
@@ -237,8 +231,8 @@ class Bullet(CorePhysics):
     def update(self):
         if self.lifetime <= 0:
             self.kill()
-        self.lifetime -= dt
-        self.position += self.velocity * dt
+        self.lifetime -= PhysicsConfig.dt
+        self.position += self.velocity * PhysicsConfig.dt
         self.sprite.update(self.position)
         self.image = self.sprite.image
         self.rect = self.sprite.rect
@@ -258,7 +252,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect = self.sprite.rect
 
     def rotation(self):
-        self.angle = (self.angle + rotation_speed/2) % 360
+        self.angle = (self.angle + PhysicsConfig.rotation_speed/2) % 360
         
     def update(self):
         self.rotation()
@@ -279,14 +273,14 @@ class Fueldrop(pygame.sprite.Sprite):
         self.rect = self.sprite.rect
     
     def rotation(self):
-        self.angle = (self.angle + rotation_speed/8) % 360
+        self.angle = (self.angle + PhysicsConfig.rotation_speed/8) % 360
     
     def destroy(self, physics_engine: PhysicsEngine):
         physics_engine._solids.remove(self)
         self.kill()
         physics_engine._fuel_respawns.append({
             'position': self.position.copy(),
-            'respawn_time': pygame.time.get_ticks() + barrel_respawn_time
+            'respawn_time': pygame.time.get_ticks() + PhysicsConfig.barrel_respawn_time
         })
 
         
