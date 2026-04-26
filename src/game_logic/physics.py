@@ -205,8 +205,8 @@ class Spaceship(CorePhysics):
             return
         self.shoot_cd = PhysicsConfig.shoot_cooldown
         bullet_vel = - PhysicsConfig.bullet_speed * pygame.Vector2(np.sin(np.deg2rad(self.angle)), np.cos(np.deg2rad(self.angle)))
-        self.bullet = Bullet(self.position, bullet_vel, self.angle, self._owner)
-        physics_engine.add_bullet(self.bullet)
+        bullet = Bullet(self.position, bullet_vel, self.angle, self._owner)
+        physics_engine.add_bullet(bullet)
                         
     
     def apply_physics(self):
