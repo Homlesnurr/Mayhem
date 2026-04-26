@@ -35,7 +35,7 @@ class BulletSprite(SpriteBase):
         super().__init__()
         self.bullet_surf = pygame.Surface((6, 20), pygame.SRCALPHA)
         self.pos = pos
-        self.color = (255,0,0) if player_id == 'Player 1' else (0,255,0)
+        self.color = (255,0,0) if player_id == 'Player 1' else (0,180,255)
         self.rect = pygame.Surface.fill(self.bullet_surf, self.color)
         self.image = pygame.transform.rotate(self.bullet_surf, angle)
         self.rect = self.image.get_rect(center = self.pos)
@@ -54,9 +54,9 @@ class SpaceshipSprite(SpriteBase):
 
     update(pos, angle) to move the sprite.
     '''
-    def __init__(self, pos: list[int, int]):
+    def __init__(self, pos: list[int, int], col: str='blue'):
         super().__init__()
-        self.ship_sprite = ImageLoader('assets\\rocket_ship_blue.png', scale=0.5)
+        self.ship_sprite = ImageLoader(f'assets\\rocket_ship_{col}.png', scale=0.5)
         self.pos = pos
         self.image = self.ship_sprite.image
         self.image_base = self.image.copy()

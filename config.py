@@ -20,7 +20,7 @@ class PhysicsConfig:
     bullet_speed = 500
     barrel_respawn_time = 5000
     gravity = 200
-    thrust_power = 500
+    thrust_power = 670
     max_velocity = 400
     velocity_damping = 0.99
-    shoot_cooldown = 0.3
+    shoot_cooldown = 0.1

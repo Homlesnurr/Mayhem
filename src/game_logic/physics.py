@@ -186,9 +186,11 @@ class Spaceship(CorePhysics):
         if player_tag == 'Player 1':
             x = 100
             y = 100
+            col = 'orange'
         elif player_tag == 'Player 2':
             x = config.screen_dimensions[0] - 100
             y = 100
+            col = 'blue'
         else:
             raise LookupError(f'Player: {player_tag}, not valid player tag')
         super().__init__(pygame.Vector2(x,y))
@@ -198,7 +200,7 @@ class Spaceship(CorePhysics):
         self.thrusting = False
         self.rotate_left = False
         self.rotate_right = False
-        self.sprite = SpaceshipSprite((x,y))
+        self.sprite = SpaceshipSprite((x,y), col)
         self.image = self.sprite.image
         self.rect = self.sprite.rect
 
