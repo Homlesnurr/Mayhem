@@ -1,7 +1,6 @@
 ## Opening game
 
-The game is opened by running the 'main.py' file. No libraries other than pygame and numpy is used.
-
+The game is opened by running the 'main.py' file.
 ## Guide
 
 Opening the game brings up the main menu, pressing the "Play" button starts the game. Cliking the Escape key will bring back the main menu.
