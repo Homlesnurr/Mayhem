@@ -1,5 +1,6 @@
 """"
-Module for handling the main game screen. This is where we add all the sprites and the physics engine. Authors: Abel Yttervik, Vincent Anuwat Van Duin
+Module for handling the main game screen. This is where we add all the sprites and the physics engine. And classes for the walls.
+ Authors: Abel Yttervik, Vincent Anuwat Van Duin
 """
 
 import pygame
