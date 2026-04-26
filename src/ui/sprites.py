@@ -146,6 +146,9 @@ class RoundedButton(SpriteBase):
                  text: str = None,
                  click_func: Callable | None = None,
                  hoverable: bool = True) -> None:
+        '''
+        Sets location, size, color, text, potential click function, and hoverable functionality.
+        '''
         super().__init__()
         self.color = color
         self.curr_color = color
@@ -172,16 +175,19 @@ class RoundedButton(SpriteBase):
 
 
     def update(self):
+        # Draws button, and resets color if it has been changed by hover()
         pygame.draw.rect(self.image, self.curr_color, (0,0,*self.size), border_radius=5)
         self.image.blit(self.text_surface, self.text_rect)
         self.curr_color = self.color
 
     def hover(self):
+        # Changes color of button if hovered
         if self.hoverable:
             self.curr_color = self.hover_color
 
 
     def click(self):
+        # Clicks the button if button has a function assigned to it.
         if isinstance(self.click_func, Callable):
             self.click_func()
             return
@@ -199,19 +205,27 @@ class ImageLoader(SpriteBase):
         super().__init__()
         try:
             self.image = pygame.image.load(image_path)
-            if size:
-                self.image = pygame.transform.smoothscale(self.image, size)
-            elif scale:
-                self.image = pygame.transform.smoothscale_by(self.image, scale)
-            self.rect = self.image.get_rect()
         except:
             raise SyntaxError(f'Couldnt load image: {image_path}')
+        
+        if size:
+            self.image = pygame.transform.smoothscale(self.image, size)
+        elif scale:
+            self.image = pygame.transform.smoothscale_by(self.image, scale)
+        
+        self.rect = self.image.get_rect()
     
     def update(self):
         pass
 
 class StatSprite(SpriteBase):
+    '''
+    Sprite used to store player info, like score and fuel.
+    '''
     def __init__(self, player: Player):
+        '''
+        Location of stats are based off of player name.
+        '''
         super().__init__()
         self.player = player
         self.surf_width = config.screen_dimensions[0]
@@ -234,7 +248,7 @@ class StatSprite(SpriteBase):
             pygame.draw.rect(self.surf, self.fuel_color, (self.x, self.y, fuel, self.height))
         elif self.player._name == 'Player 2':
             pygame.draw.rect(self.surf, self.empty_color, (self.x, self.y, self.width, self.height))
-            pygame.draw.rect(self.surf, self.fuel_color, (self.x + (self.width - fuel), self.y, self.width - (self.width - fuel), self.height))
+            pygame.draw.rect(self.surf, self.fuel_color, (self.x + (self.width - fuel), self.y, fuel+1, self.height))
         
         # Score
         font = pygame.font.Font(None, int(self.surf_width//12))
@@ -246,6 +260,9 @@ class StatSprite(SpriteBase):
         self.rect = self.surf.get_rect()
 
     def update(self, fuel, score):
+        '''
+        Updates fuel gauge based on players current fuel, and updates score.
+        '''
         fuel = fuel * self.width / 100
         self.surf.fill((0,0,0,0))
         # Fuel bar

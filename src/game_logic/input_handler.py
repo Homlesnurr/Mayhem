@@ -15,6 +15,12 @@ class InputHandler:
         self.running = True
 
     def player_input(self,  pressed: pygame.key.ScancodeWrapper, clicked: int = None):
+        '''
+        Handles all inputs the player can do.
+        
+        We use both pygame.key.get_pressed(), and pygame.event.get(), because pygame.key.get_pressed() will always have 1 frame of input lag,
+        something that pygame.event.get() does not have.
+        '''
         players = self.display.active_scene.players
 
         if pressed[pygame.K_w]     or clicked == pygame.K_w:       players['player_1'].ship.thrust()
@@ -29,14 +35,24 @@ class InputHandler:
 
 
     def handle_events(self):
+        '''
+        Handles all events the user can do
+        '''
+        # Makes a 1x1 rect at the cursor location, so we can easily check if the cursor is hovering any sprites in the all_sprites group.
         mouse_sprite = pygame.sprite.Sprite()
         mouse_sprite.rect = pygame.Rect(*pygame.mouse.get_pos(), 1,1)
         pressed_keys = pygame.key.get_pressed()
+
+        # Handles player input only if the active scene is the game screen.
         if isinstance(self.display.active_scene, GameScreen):
             self.player_input(pressed_keys)
+        
+        # Stores all hovered sprites
         hovered_sprites = pygame.sprite.spritecollide(mouse_sprite, self.display.active_scene.all_sprites, False)
         for sprite in hovered_sprites:
             if hasattr(sprite, 'hoverable'): sprite.hover()
+        
+        # Handles general keyboard and click events
         for event in pygame.event.get():
             if event.type == pygame.QUIT: self.running = False
             if event.type == pygame.KEYDOWN:

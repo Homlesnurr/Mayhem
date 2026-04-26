@@ -63,15 +63,16 @@ class CollisionHandler:
         self.physics_engine = physics_engine
     
     def check_ship_collisions(self, ship: Spaceship):
-            # Check for ship collisions
-            collided_ships = pygame.sprite.spritecollide(ship, [s for s in self.physics_engine._spaceships if s is not ship], False, pygame.sprite.collide_mask)
-            if collided_ships:
-                for c_ship in [*collided_ships, ship]:
-                    for player in self.physics_engine._players:
-                        if c_ship._owner == player._name:
-                            player.kill_ship(self.physics_engine)
+        # Check for ship collisions
+        collided_ships = pygame.sprite.spritecollide(ship, [s for s in self.physics_engine._spaceships if s is not ship], False, pygame.sprite.collide_mask)
+        if collided_ships:
+            for c_ship in [*collided_ships, ship]:
+                for player in self.physics_engine._players:
+                    if c_ship._owner == player._name:
+                        player.kill_ship(self.physics_engine)
     
     def check_bullet_collisions(self, ship: Spaceship):
+        # Check for bullet collisions
         hits = pygame.sprite.spritecollide(ship, [b for b in self.physics_engine._bullets if b._owner != ship._owner], False, pygame.sprite.collide_mask)
         if hits:
             for hit in hits:
@@ -86,7 +87,9 @@ class CollisionHandler:
                     for player in self.physics_engine._players:
                         if hit._owner == player._name:
                             player.kill_ship(self.physics_engine)
+
     def check_solid_collisions(self, ship: Spaceship):
+        # Check for collision with solid objects
         collided_solids = pygame.sprite.spritecollide(ship, self.physics_engine._solids, False, pygame.sprite.collide_mask)
         if collided_solids:
             for collision in collided_solids:
@@ -97,7 +100,9 @@ class CollisionHandler:
                     for player in self.physics_engine._players:
                         if ship._owner == player._name:
                             player.kill_ship(self.physics_engine)
+
     def check_bullet_solid_collisions(self):
+        # Check for bullets colliding with solid objects
         pygame.sprite.groupcollide(self.physics_engine._bullets, self.physics_engine._solids, True, False, pygame.sprite.collide_mask)
     
 
@@ -109,12 +114,14 @@ class FuelRespawnOverseer:
         self._fuel_respawns = []
     
     def push_respawn(self, position: tuple[int,int]):
+        # Stores fuel tanks for later respawning
         self._fuel_respawns.append({
             'position': position,
             'respawn_time': pygame.time.get_ticks() + PhysicsConfig.barrel_respawn_time
         })
 
     def update(self, physics_engine: PhysicsEngine):
+        # Updates countown for fuel respawning
         curr_time = pygame.time.get_ticks() 
         for respawn in self._fuel_respawns[:]:
             if curr_time >= respawn['respawn_time']:
@@ -150,15 +157,19 @@ class Player(pygame.sprite.Sprite):
         self.make_ship()
     
     def make_ship(self):
+        # Initialized a ship object with player tag
         self.ship = Spaceship(self._name)
     
     def take_points(self, points: int=5):
+        # Deducts points from score
         self._score -= points
 
     def give_points(self, points: int=10):
+        # Adds points to score
         self._score += points
 
     def kill_ship(self, physics_engine: PhysicsEngine):
+        # Penalizes player for being hit
         self.take_points(5)
         self.ship.kill()
         self.make_ship()
@@ -195,12 +206,14 @@ class Spaceship(CorePhysics):
         self.thrusting = True
         
     def rotate(self, dir: str):
+        # Rotates spaceship angle.
         if dir == 'l' or dir =='left':
             self.angle = (self.angle + PhysicsConfig.rotation_speed)
         elif dir == 'r' or dir == 'right':
             self.angle = (self.angle - PhysicsConfig.rotation_speed)
 
     def fire_bullet(self, physics_engine: PhysicsEngine):
+        # Checks for shoot cooldown, and fires bullet same direction as spaceship is facing.
         if self.shoot_cd > 0:
             return
         self.shoot_cd = PhysicsConfig.shoot_cooldown
@@ -210,6 +223,11 @@ class Spaceship(CorePhysics):
                         
     
     def apply_physics(self):
+        '''
+        Method for changing acceleration, speed and location of spaceship.
+
+        Handles thrusting, rotation and limiting top speed. Then moves the spaceship accordingly
+        '''
         # Gravity
         self.acceleration = pygame.Vector2(0, 200) # Gravity
         
@@ -234,8 +252,7 @@ class Spaceship(CorePhysics):
         self.position += self.velocity * PhysicsConfig.dt
 
     def update(self):
-
-        # update Spaceship
+        # Update Spaceship physics, update sprite location, and reset variables.
         self.apply_physics()
         self.image, self.rect = self.sprite.update(self.position, self.angle)
         self.shoot_cd -= PhysicsConfig.dt
@@ -261,6 +278,7 @@ class Bullet(CorePhysics):
         self.rect = self.sprite.rect
 
     def update(self):
+        # Checks for bullet timeout, moves bullet and sprite.
         if self.lifetime <= 0:
             self.kill()
         self.lifetime -= PhysicsConfig.dt
@@ -287,6 +305,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.angle = (self.angle + PhysicsConfig.rotation_speed/2) % 360
         
     def update(self):
+        # Rotates obstacle and updates sprite.
         self.rotation()
         self.sprite.update(self.angle)
         self.image = self.sprite.image
@@ -308,10 +327,12 @@ class Fueldrop(pygame.sprite.Sprite):
         self.angle = (self.angle + PhysicsConfig.rotation_speed/8) % 360
     
     def destroy(self, fuel_respawn_overseer: FuelRespawnOverseer):
+        # Kills fuel drop, and adds to respawn timer.
         self.kill()
         fuel_respawn_overseer.push_respawn(self.position.copy())
 
     def update(self):
+        # Rotates fueldrop, and updates sprite.
         self.rotation()
         self.sprite.update(self.position, self.angle)
         self.image = self.sprite.image

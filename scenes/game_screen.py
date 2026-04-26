@@ -6,8 +6,8 @@ Module for handling the main game screen. This is where we add all the sprites a
 import pygame
 import config
 from scenes import SceneBase
-from src.ui import RoundedButton, ImageLoader, Display, SpaceshipSprite
-from src.game_logic import Spaceship, PhysicsEngine, Obstacle, Fueldrop, Player
+from src.ui import ImageLoader
+from src.game_logic import PhysicsEngine, Obstacle, Fueldrop, Player
 
 class GameScreen(SceneBase):
     '''
@@ -15,10 +15,15 @@ class GameScreen(SceneBase):
     '''
     def __init__(self):
         super().__init__()
+
+        # Initializes the gmae screen itself
         self.physics_engine = PhysicsEngine()
         width = config.screen_dimensions[0]
         height = config.screen_dimensions[1]
         background = ImageLoader('assets\\temp_background.jpeg', (width, height))
+
+        # Initializes the elements in the scene
+        self.make_map()
         self.obstacle = Obstacle(600, 300)
         self.fueldrop1 = Fueldrop(100, 550)
         self.fueldrop2 = Fueldrop(1100, 550)
@@ -26,8 +31,9 @@ class GameScreen(SceneBase):
             'player_1': Player('Player 1'),
             'player_2': Player('Player 2')
         }
+
+        # Adds all elements to the scene
         self.add(background)
-        self.make_map()
         self.physics_engine.add_player(self.players['player_1'])
         self.physics_engine.add_player(self.players['player_2'])
         self.physics_engine.add_solid(self.obstacle)

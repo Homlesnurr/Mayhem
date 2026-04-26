@@ -5,7 +5,6 @@ Module for handling the main game loop. This is where we initialize and run the 
 import pygame
 from .game_logic.input_handler import InputHandler
 from .ui.display import Display
-import scenes
 import config
 
 class MainGame:
@@ -23,6 +22,9 @@ class MainGame:
         self.run()
 
     def run(self):
+        '''
+        Main event loop, where input events are handled, and everything on the display is processed.
+        '''
         while self.input_handler.running:
             self.input_handler.handle_events()
             self.display.process()
