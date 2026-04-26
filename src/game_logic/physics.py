@@ -4,6 +4,10 @@ import numpy as np
 import config
 from src.ui import SpaceshipSprite, BulletSprite, ObstacleSprite, FueldropSprite, StatSprite
 from config import PhysicsConfig
+"""
+Module for handling all physics such as movement, collisions and fuel respawns. Authors: Abel Yttervik, Vincent Anuwat Van Duin
+
+"""
 
 
 class PhysicsEngine:

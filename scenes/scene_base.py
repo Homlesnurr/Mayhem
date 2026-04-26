@@ -1,3 +1,7 @@
+"""
+Module for handling the base scene. This is where we define the base class for all scenes. Authors: Abel Yttervik, Vincent Anuwat Van Duin.
+"""
+
 from abc import ABC, abstractmethod
 import config
 import pygame

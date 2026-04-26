@@ -1,10 +1,14 @@
+"""
+Module for handling all user inputs. This is where we do the keypress checks and mouse clicks. Authors: Abel Yttervik, Vincent Anuwat Van Duin
+"""
+
 import pygame
 from src.ui import Display
 from scenes import GameScreen, MainMenu
 
 class InputHandler:
     '''
-    InputHandler handles all the inputs from the user. This is to prevent bloating the main game loop.
+    InputHandler handles all the inputs from the user. This is to prevent bloating the main game loop. Authors: Abel Yttervik, Vincent Anuwat Van Duin.
     '''
     def __init__(self, display: Display):
         self.display = display

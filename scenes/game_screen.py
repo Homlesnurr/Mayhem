@@ -1,3 +1,7 @@
+""""
+Module for handling the main game screen. This is where we add all the sprites and the physics engine. Authors: Abel Yttervik, Vincent Anuwat Van Duin
+"""
+
 import pygame
 import config
 from scenes import SceneBase

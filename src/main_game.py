@@ -1,3 +1,7 @@
+"""
+Module for handling the main game loop. This is where we initialize and run the game. Authors: Abel Yttervik, Vincent Anuwat Van Duin.
+
+"""
 import pygame
 from .game_logic.input_handler import InputHandler
 from .ui.display import Display

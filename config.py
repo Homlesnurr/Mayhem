@@ -1,5 +1,5 @@
 '''
-Config file with global variables
+Config file with global variables. Authors: Abel Yttervik, Vincent Anuwat Van Duin
 '''
 from logging import config
 

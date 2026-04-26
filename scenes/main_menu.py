@@ -1,3 +1,7 @@
+"""
+Module for handling the main menu. This is where we add the background and play button. Authors: Abel Yttervik, Vincent Anuwat Van Duin.
+"""
+
 import pygame
 import config
 from scenes import SceneBase

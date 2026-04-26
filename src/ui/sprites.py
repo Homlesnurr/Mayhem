@@ -1,3 +1,8 @@
+"""
+Module for handling all sprites such as the spaceship, bullets, obstacles and fuel drops. Authors: Abel Yttervik, Vincent Anuwat Van Duin
+"""
+
+
 from __future__ import annotations                                                                                                                                                                     
 import pygame
 import config

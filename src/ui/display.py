@@ -1,3 +1,7 @@
+"""
+Module for handling the display. This is where we set up the main menu and the game screen. 
+This is where we draw all the sprites and objects on the screen. Authors: Abel Yttervik, Vincent Anuwat Van Duin.
+"""
 from __future__ import annotations
 from typing import Any
 import pygame
